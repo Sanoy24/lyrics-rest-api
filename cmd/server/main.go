@@ -29,7 +29,6 @@ func main() {
 	defer database.CLoseDB()
 
 	db := database.GetDB()
-	db.Create()
 
 	router := gin.Default()
 	router.Run(":8000")
