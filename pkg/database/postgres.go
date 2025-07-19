@@ -49,6 +49,26 @@ func InitDB(dbParam *models.PostgresParam) error {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
+	err = db.AutoMigrate(
+		&models.User{},
+		&models.Role{},
+		&models.Permission{},
+		&models.Artist{},
+		&models.Album{},
+		&models.Song{},
+		&models.Annotation{},
+		&models.Comment{},
+		&models.Vote{},
+		&models.SongArtist{},
+		&models.SongTag{},
+		&models.ArtistTag{},
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to migrate: %w", err)
+	}
+	log.Println("Database migration completed successfully")
+
 	DB = db
 
 	log.Println("Connected to database successfully")
@@ -71,7 +91,7 @@ func GetDB() *gorm.DB {
 	return DB
 }
 
-func CLoseDB() {
+func CloseDB() {
 	if DB != nil {
 		psqlDB, err := DB.DB()
 		if err != nil {

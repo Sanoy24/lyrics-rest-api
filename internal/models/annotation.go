@@ -16,7 +16,7 @@ type Annotation struct {
 	User       User           `json:"user" gorm:"foreignKey:UserID"`
 	StartIndex int            `json:"start_index"`
 	EndIndex   int            `json:"end_index"`
-	Fragemnt   string         `json:"fragment"`
+	Fragment   string         `json:"fragment"`
 	Content    string         `json:"content" gorm:"type:text"`
 	Verified   bool           `json:"verified" gorm:"default:false"`
 	VoteScore  int            `json:"vote_score" gorm:"default:0"`
