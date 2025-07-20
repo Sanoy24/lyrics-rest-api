@@ -1,8 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
@@ -34,14 +40,40 @@ func main() {
 	}
 	defer database.CloseDB()
 	db := database.GetDB()
+	router := gin.Default()
+
+	server := &http.Server{
+		Addr:    ":" + cfg.Server.Port,
+		Handler: router,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal("Failed to start server:", err)
+		}
+	}()
 
 	if err = database.Seed(db); err != nil {
 		log.Fatal("Failed to seed database:", err)
 	}
 
-	router := gin.Default()
-	// TODO: Add routes here
+	gracefulShutdown(server)
 
-	router.Run(":" + cfg.Server.Port) // Use port from config
+}
 
+func gracefulShutdown(server *http.Server) {
+	// Implement graceful shutdown logic here
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+
+	log.Println("Server exited gracefully.")
 }
