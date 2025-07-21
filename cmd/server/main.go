@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/database"
@@ -64,7 +65,7 @@ func main() {
 		return
 	}
 
-	router := gin.Default()
+	router := setupRouter()
 
 	server := &http.Server{
 		Addr:    ":" + cfg.Server.Port,
@@ -96,4 +97,18 @@ func gracefulShutdown(server *http.Server) {
 	}
 
 	log.Println("Server exited gracefully.")
+}
+
+func setupRouter() *gin.Engine {
+	router := gin.Default()
+	healthCheck := handlers.NewHealthHandler()
+	router.GET("/health", healthCheck.HealthCheck)
+	router.Group("/api/v1")
+	{
+		// v1.GET("/health", func(c *gin.Context) {
+		// 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		// })
+	}
+
+	return router
 }
