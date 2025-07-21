@@ -49,26 +49,6 @@ func InitDB(dbParam *models.PostgresParam) error {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	err = db.AutoMigrate(
-		&models.User{},
-		&models.Role{},
-		&models.Permission{},
-		&models.Artist{},
-		&models.Album{},
-		&models.Song{},
-		&models.Annotation{},
-		&models.Comment{},
-		&models.Vote{},
-		&models.SongArtist{},
-		&models.SongTag{},
-		&models.ArtistTag{},
-	)
-
-	if err != nil {
-		return fmt.Errorf("failed to migrate: %w", err)
-	}
-	log.Println("Database migration completed successfully")
-
 	DB = db
 
 	log.Println("Connected to database successfully")
@@ -105,4 +85,33 @@ func CloseDB() {
 			log.Println("Database connection closed successfully")
 		}
 	}
+}
+
+func Migrate(db *gorm.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is not initialized")
+	}
+
+	log.Println("Running database migrations...")
+
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.Role{},
+		&models.Permission{},
+		&models.Artist{},
+		&models.Album{},
+		&models.Song{},
+		&models.Annotation{},
+		&models.Comment{},
+		&models.Vote{},
+		&models.SongArtist{},
+		&models.SongTag{},
+		&models.ArtistTag{},
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to auto-migrate: %w", err)
+	}
+	log.Println("Database migration completed successfully")
+	return nil
 }

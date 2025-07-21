@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,10 @@ import (
 )
 
 func main() {
+
+	runMigrations := flag.Bool("migrate", false, "Run database migrations and exit")
+	runSeeder := flag.Bool("seed", false, "Run database seeder and exit")
+	flag.Parse()
 
 	cfg, err := config.LoadConfig()
 
@@ -40,6 +45,25 @@ func main() {
 	}
 	defer database.CloseDB()
 	db := database.GetDB()
+
+	if *runMigrations {
+		log.Println("Running database migrations...")
+		if err := database.Migrate(db); err != nil {
+			log.Fatal("Failed to run migrations:", err)
+		}
+		log.Println("Migrations completed successfully.")
+		return
+	}
+	// Conditionally run seeder
+	if *runSeeder {
+		log.Println("Starting database seeding...")
+		if err := database.Seed(db); err != nil {
+			log.Fatalf("Database seeding failed: %v", err)
+		}
+
+		return
+	}
+
 	router := gin.Default()
 
 	server := &http.Server{
@@ -52,10 +76,6 @@ func main() {
 			log.Fatal("Failed to start server:", err)
 		}
 	}()
-
-	if err = database.Seed(db); err != nil {
-		log.Fatal("Failed to seed database:", err)
-	}
 
 	gracefulShutdown(server)
 

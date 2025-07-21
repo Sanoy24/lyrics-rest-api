@@ -124,8 +124,8 @@ func assignPermissionsToRole(db *gorm.DB, roleName string, permissionNames []str
 		return err
 	}
 	var permissions []models.Permission
-	if err := db.Where("name IN ?", permissionNames).First(&permissions).Error; err != nil {
+	if err := db.Where("name IN ?", permissionNames).Find(&permissions).Error; err != nil {
 		return err
 	}
-	return db.Model(&role).Association("Permissions").Append(&permissions)
+	return db.Model(&role).Association("Permissions").Replace(&permissions)
 }
