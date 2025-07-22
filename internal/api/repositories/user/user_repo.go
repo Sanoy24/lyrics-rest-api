@@ -2,26 +2,49 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log/slog"
+	"strings"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
+	"github.com/Sanoy24/lyrics-rest-api/pkg/errors"
 	"gorm.io/gorm"
 )
 
 var ErrUserNotFound = errors.New("user not found")
 
 type postgresRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *slog.Logger
 }
 
-func NewPostgresRepository(db *gorm.DB) interfaces.UserRepository {
-	return &postgresRepository{db: db}
+func NewPostgresRepository(db *gorm.DB, logger *slog.Logger) interfaces.UserRepository {
+	return &postgresRepository{db: db, logger: logger}
 }
 
 func (r *postgresRepository) CreateUser(ctx context.Context, user *models.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
+	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
+		r.logger.Error("Failed to create user",
+			slog.String("email", user.Email),
+			slog.String("username", user.Username),
+			slog.String("error", err.Error()),
+		)
+		if errors.IsDuplicateKeyError(err) {
+			if strings.Contains(err.Error(), "email") {
+				return errors.NewAppError("EMAIL_EXISTS", "Email already exists", 409)
+			}
+			if strings.Contains(err.Error(), "username") {
+				return errors.NewAppError("USERNAME_EXISTS", "Username already exists", 409)
+			}
+			return errors.ErrUserExists
+		}
+		return fmt.Errorf("failed to create user: %w", err)
+	}
+	r.logger.Info("User created successfully",
+		slog.Int("id", int(user.ID)),
+		slog.String("username", user.Username))
+	return nil
 }
 func (r *postgresRepository) GetUserByID(ctx context.Context, id int) (*models.User, error) {
 	var user models.User

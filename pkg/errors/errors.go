@@ -1,50 +1,69 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+var (
+	ErrUserExists     = NewAppError("USER_EXISTS", "User with this email or username already exists", http.StatusConflict)
+	ErrUserNotFound   = NewAppError("USER_NOT_FOUND", "User not found", http.StatusNotFound)
+	ErrInvalidInput   = NewAppError("INVALID_INPUT", "Invalid input data", http.StatusBadRequest)
+	ErrInternalServer = NewAppError("INTERNAL_ERROR", "Internal server error", http.StatusInternalServerError)
+	ErrUnauthorized   = NewAppError("UNAUTHORIZED", "Unauthorized access", http.StatusUnauthorized)
+	ErrForbidden      = NewAppError("FORBIDDEN", "Access forbidden", http.StatusForbidden)
 )
 
 type AppError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Type    string `json:"type"`
-	Err     error  `json:"-"`
+	Code       string `json:"code"`
+	Message    string `json:"message"`
+	StatusCode int    `json:"-"`
 }
 
 func (e *AppError) Error() string {
-	if e.Err != nil {
-		return fmt.Sprintf("[%d] %s: %v", e.Code, e.Message, e.Err)
-	}
-	return fmt.Sprintf("[%d] %s", e.Code, e.Message)
+	return e.Message
 }
 
-func (e *AppError) Unwrap() error {
-	return e.Err
-}
-
-func NewAppError(code int, message, errorType string) *AppError {
+func NewAppError(code, message string, statusCode int) *AppError {
 	return &AppError{
-		Code:    code,
-		Message: message,
-		Type:    errorType,
+		Code:       code,
+		Message:    message,
+		StatusCode: statusCode,
 	}
 }
 
-func NewAppErrorWithCause(code int, message, errorType string, err error) *AppError {
+func NewValidationError(field, message string) *AppError {
 	return &AppError{
-		Code:    code,
-		Message: message,
-		Type:    errorType,
-		Err:     err,
+		Code:       "VALIDATION_ERROR",
+		Message:    fmt.Sprintf("Field '%s': %s", field, message),
+		StatusCode: http.StatusBadRequest,
 	}
 }
 
-var (
-	ErrInvalidCredentials = NewAppError(http.StatusUnauthorized, "Invalid credentials", "INVALID_CREDENTIALS")
-	ErrUnAuthorized       = NewAppError(http.StatusUnauthorized, "Unauthorized access", "UNAUTHORIZED")
-	ErrUserNotFound       = NewAppError(http.StatusNotFound, "User not found", "USER_NOT_FOUND")
-	ErrUserExists         = NewAppError(http.StatusConflict, "User already exists", "USER_EXISTS")
-	ErrInvalidInput       = NewAppError(http.StatusBadRequest, "Invalid input", "INVALID_INPUT")
-	ErrInternalServer     = NewAppError(http.StatusInternalServerError, "Internal server error", "INTERNAL")
-)
+func IsDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var pgError *pgconn.PgError
+	if errors.As(err, &pgError) {
+		return pgError.Code == "23505" // Unique violation
+	}
+	errStr := strings.ToLower(err.Error())
+	duplicateKeywords := []string{
+		"duplicate key value violates unique constraint",
+		"unique constraint",
+		"duplicate entry",
+		"already exists",
+	}
+	for _, keyword := range duplicateKeywords {
+		if strings.Contains(errStr, keyword) {
+			return true
+		}
+	}
+	return false
+
+}
