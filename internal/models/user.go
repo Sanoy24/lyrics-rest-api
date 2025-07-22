@@ -37,9 +37,9 @@ type CreateUserRequest struct {
 	Password  string `json:"password" binding:"required,min=6,max=100"`
 	FirstName string `json:"first_name" binding:"omitempty,max=50"`
 	LastName  string `json:"last_name" binding:"omitempty,max=50"`
-	Bio       string `json:"bio" binding:"omitempty,max=500"`
 	Avatar    string `json:"avatar" binding:"omitempty,url"`
 }
+
 type UpdateUserRequest struct {
 	Username  string `json:"username" binding:"omitempty,min=3,max=30"` // Optional
 	Email     string `json:"email" binding:"omitempty,email"`

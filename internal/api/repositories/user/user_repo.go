@@ -60,3 +60,14 @@ func (r *postgresRepository) GetUserByUsername(ctx context.Context, username str
 	}
 	return &user, nil
 }
+
+func (r *postgresRepository) GetRoleByName(ctx context.Context, roleName string) (*models.Role, error) {
+	var role models.Role
+	if err := r.db.WithContext(ctx).Where("name = ?", roleName).First(&role).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("role not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get role by name: %w", err)
+	}
+	return &role, nil
+}

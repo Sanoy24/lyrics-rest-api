@@ -6,7 +6,18 @@ type APIResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
+	// Error   any    `json:"error,omitempty"`
+}
+
+type ErrorResponse struct {
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
 	Error   any    `json:"error,omitempty"`
+}
+type SuccessResponse struct {
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
 type PaginatedResponse struct {

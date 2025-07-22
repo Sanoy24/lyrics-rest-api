@@ -12,10 +12,13 @@ import (
 	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/user"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/database"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -65,7 +68,7 @@ func main() {
 		return
 	}
 
-	router := setupRouter()
+	router := setupRouter(db)
 
 	server := &http.Server{
 		Addr:    ":" + cfg.Server.Port,
@@ -99,15 +102,19 @@ func gracefulShutdown(server *http.Server) {
 	log.Println("Server exited gracefully.")
 }
 
-func setupRouter() *gin.Engine {
+func setupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
+	userRepo := user.NewPostgresRepository(db)
+	userService := services.NewAuthService(userRepo, "24h", "your_jwt_secret")
+	authHandler := handlers.NewAuthHandler(userService)
 	healthCheck := handlers.NewHealthHandler()
 	router.GET("/health", healthCheck.HealthCheck)
-	router.Group("/api/v1")
+	v1 := router.Group("/api/v1")
 	{
-		// v1.GET("/health", func(c *gin.Context) {
-		// 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-		// })
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+		}
 	}
 
 	return router

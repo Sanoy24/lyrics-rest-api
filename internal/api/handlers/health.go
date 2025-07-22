@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Sanoy24/lyrics-rest-api/internal/models"
+	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,8 +14,8 @@ func NewHealthHandler() *HealthHandler {
 }
 
 func (h *HealthHandler) HealthCheck(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, models.APIResponse{
-		Success: true,
+	ctx.JSON(http.StatusOK, util.SuccessResponse{
+		Status:  true,
 		Message: "server running",
 	})
 }
