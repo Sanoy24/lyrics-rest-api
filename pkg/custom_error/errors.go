@@ -1,4 +1,4 @@
-package errors
+package customerror
 
 import (
 	"errors"
@@ -66,4 +66,29 @@ func IsDuplicateKeyError(err error) bool {
 	}
 	return false
 
+}
+
+func GetDuplicateKeyErrorField(err error) string {
+	if err == nil {
+		return ""
+	}
+	var pgError *pgconn.PgError
+	if errors.As(err, &pgError) && pgError.Code == "23505" {
+		errorDetail := pgError.Detail
+		if strings.Contains(errorDetail, "(email)") {
+			return "email"
+		}
+		if strings.Contains(errorDetail, "(username)") {
+			return "username"
+		}
+
+		constraintName := pgError.ConstraintName
+		if strings.Contains(constraintName, "email") {
+			return "email"
+		}
+		if strings.Contains(constraintName, "username") {
+			return "username"
+		}
+	}
+	return ""
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,12 +23,12 @@ import (
 )
 
 func main() {
+	cfg, err := config.LoadConfig()
+	logger := setupLogger(cfg)
 
 	runMigrations := flag.Bool("migrate", false, "Run database migrations and exit")
 	runSeeder := flag.Bool("seed", false, "Run database seeder and exit")
 	flag.Parse()
-
-	cfg, err := config.LoadConfig()
 
 	if err != nil {
 		log.Fatal("Failed to load config:", err)
@@ -68,7 +69,7 @@ func main() {
 		return
 	}
 
-	router := setupRouter(db)
+	router := setupRouter(db, logger, cfg)
 
 	server := &http.Server{
 		Addr:    ":" + cfg.Server.Port,
@@ -102,11 +103,11 @@ func gracefulShutdown(server *http.Server) {
 	log.Println("Server exited gracefully.")
 }
 
-func setupRouter(db *gorm.DB) *gin.Engine {
+func setupRouter(db *gorm.DB, logger *slog.Logger, cfg *config.Config) *gin.Engine {
 	router := gin.Default()
-	userRepo := user.NewPostgresRepository(db)
-	userService := services.NewAuthService(userRepo, "24h", "your_jwt_secret")
-	authHandler := handlers.NewAuthHandler(userService)
+	userRepo := user.NewPostgresRepository(db, logger)
+	userService := services.NewAuthService(userRepo, cfg.JWT.ExpireIn, cfg.JWT.Secret, logger)
+	authHandler := handlers.NewAuthHandler(userService, logger)
 	healthCheck := handlers.NewHealthHandler()
 	router.GET("/health", healthCheck.HealthCheck)
 	v1 := router.Group("/api/v1")
@@ -118,4 +119,19 @@ func setupRouter(db *gorm.DB) *gin.Engine {
 	}
 
 	return router
+}
+
+func setupLogger(cfg *config.Config) *slog.Logger {
+	var handler slog.Handler
+	if cfg.Server.Env == "release" {
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+	} else {
+		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		})
+	}
+	return slog.New(handler)
+
 }

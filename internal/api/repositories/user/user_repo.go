@@ -2,13 +2,14 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
+	"net/http"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
-	"github.com/Sanoy24/lyrics-rest-api/pkg/errors"
+	"github.com/Sanoy24/lyrics-rest-api/pkg/custom_error"
 	"gorm.io/gorm"
 )
 
@@ -30,14 +31,16 @@ func (r *postgresRepository) CreateUser(ctx context.Context, user *models.User) 
 			slog.String("username", user.Username),
 			slog.String("error", err.Error()),
 		)
-		if errors.IsDuplicateKeyError(err) {
-			if strings.Contains(err.Error(), "email") {
-				return errors.NewAppError("EMAIL_EXISTS", "Email already exists", 409)
+		if customerror.IsDuplicateKeyError(err) {
+			field := customerror.GetDuplicateKeyErrorField(err)
+			switch field {
+			case "email":
+				return customerror.NewAppError("EMAIL_EXISTS", "Email already exists", http.StatusConflict)
+			case "username":
+				return customerror.NewAppError("USERNAME_EXISTS", "Username already exists", http.StatusConflict)
+			default:
+				return customerror.ErrUserExists
 			}
-			if strings.Contains(err.Error(), "username") {
-				return errors.NewAppError("USERNAME_EXISTS", "Username already exists", 409)
-			}
-			return errors.ErrUserExists
 		}
 		return fmt.Errorf("failed to create user: %w", err)
 	}
