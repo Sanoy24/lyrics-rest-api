@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
@@ -9,14 +8,15 @@ import (
 	customerror "github.com/Sanoy24/lyrics-rest-api/pkg/custom_error"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
 	authService *services.AuthService
-	logger      *slog.Logger
+	logger      *zap.Logger
 }
 
-func NewAuthHandler(authService *services.AuthService, logger *slog.Logger) *AuthHandler {
+func NewAuthHandler(authService *services.AuthService, logger *zap.Logger) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		logger:      logger,
@@ -27,7 +27,7 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.CreateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		h.logger.Warn("Invlaid request in registration request", slog.String("error", err.Error()))
+		h.logger.Warn("Invlaid request in registration request", zap.String("error", err.Error()))
 		ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
 			Status: false,
 			Error: &util.ErrorData{
@@ -38,12 +38,18 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 		})
 		return
 	}
-	h.logger.Info("Registration attempt", slog.String("email", req.Username), slog.String("username", req.Email))
+	h.logger.Info("Registration attempt", zap.String("email", req.Username), zap.String("username", req.Email))
 
 	response, err := h.authService.Register(ctx.Request.Context(), &req)
 	if err != nil {
-		h.handleError(ctx, err)
-		return
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+				Details: err.Error(),
+			},
+		})
 	}
 
 	ctx.JSON(http.StatusCreated, response)
@@ -60,7 +66,7 @@ func (h *AuthHandler) handleError(ctx *gin.Context, err error) {
 		})
 		return
 	}
-	h.logger.Error("Unhandled error in auth handler", slog.String("error", err.Error()))
+	h.logger.Error("Unhandled error in auth handler", zap.String("error", err.Error()))
 	ctx.JSON(http.StatusInternalServerError, &util.ErrorData{
 		Code:    "INTERNAL_ERROR",
 		Message: "Internal server error",

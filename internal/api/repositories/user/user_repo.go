@@ -2,98 +2,69 @@ package user
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log/slog"
-	"net/http"
+	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
-	"github.com/Sanoy24/lyrics-rest-api/pkg/custom_error"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-var ErrUserNotFound = errors.New("user not found")
-
-type postgresRepository struct {
+type userRepo struct {
 	db     *gorm.DB
-	logger *slog.Logger
+	logger *zap.Logger
 }
 
-func NewPostgresRepository(db *gorm.DB, logger *slog.Logger) interfaces.UserRepository {
-	return &postgresRepository{db: db, logger: logger}
-}
-
-func (r *postgresRepository) CreateUser(ctx context.Context, user *models.User) error {
-	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
-		r.logger.Error("Failed to create user",
-			slog.String("email", user.Email),
-			slog.String("username", user.Username),
-			slog.String("error", err.Error()),
-		)
-		if customerror.IsDuplicateKeyError(err) {
-			field := customerror.GetDuplicateKeyErrorField(err)
-			switch field {
-			case "email":
-				return customerror.NewAppError("EMAIL_EXISTS", "Email already exists", http.StatusConflict)
-			case "username":
-				return customerror.NewAppError("USERNAME_EXISTS", "Username already exists", http.StatusConflict)
-			default:
-				return customerror.ErrUserExists
-			}
-		}
-		return fmt.Errorf("failed to create user: %w", err)
+func NewUserRepo(db *gorm.DB, logger *zap.Logger) interfaces.UserRepository {
+	return &userRepo{
+		db:     db,
+		logger: logger,
 	}
-	r.logger.Info("User created successfully",
-		slog.Int("id", int(user.ID)),
-		slog.String("username", user.Username))
+}
+
+func (u *userRepo) CreateUser(ctx context.Context, user *models.User) error {
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	if err := u.db.WithContext(ctx).Create(&user).Error; err != nil {
+		u.logger.Error("failed to create user", zap.Error(err))
+		return err
+	}
+	u.logger.Info("user created successfully", zap.Int("user_id", int(user.ID)), zap.String("username", user.Username))
+	return nil
+
+}
+func (u *userRepo) GetUserByID(ctx context.Context, id int) (*models.User, error) {
+	var user models.User
+	if err := u.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
+		u.logger.Error("failed to get user by id", zap.Error(err), zap.Int("user_id", int(id)))
+		return nil, err
+	}
+	u.logger.Info("user retrieved successfully", zap.Int("user_id", int(id)), zap.String("username", user.Username))
+	return &user, nil
+}
+
+func (u *userRepo) UpdateUser(ctx context.Context, user *models.User) error {
 	return nil
 }
-func (r *postgresRepository) GetUserByID(ctx context.Context, id int) (*models.User, error) {
+func (u *userRepo) DeleteUser(ctx context.Context, id int) error {
+	return nil
+}
+func (u *userRepo) GetAllUsers(ctx context.Context) ([]*models.User, error) {
+	return nil, nil
+}
+func (u *userRepo) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
-	if err := r.db.WithContext(ctx).First(&user, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUserNotFound
-		}
-		return nil, fmt.Errorf("failed to get user by ID: %w", err)
-	}
-	return &user, nil
-}
-func (r *postgresRepository) UpdateUser(ctx context.Context, user *models.User) error {
-	return r.db.WithContext(ctx).Model(user).Updates(user).Error
-}
-func (r *postgresRepository) DeleteUser(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Delete(&models.User{}, id).Error
-}
-func (r *postgresRepository) GetAllUsers(ctx context.Context) ([]*models.User, error) {
-	var users []*models.User
-	if err := r.db.WithContext(ctx).Find(&users).Error; err != nil {
+	if err := u.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		u.logger.Error("failed to get user by email", zap.Error(err), zap.String("email", email))
 		return nil, err
 	}
-	return users, nil
-}
-func (r *postgresRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	var user models.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, err
-	}
+	u.logger.Info("user retrieved successfully", zap.String("email", email), zap.String("username", user.Username))
 	return &user, nil
 }
-func (r *postgresRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
-	var user models.User
-	if err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
+func (u *userRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	return nil, nil
 }
-
-func (r *postgresRepository) GetRoleByName(ctx context.Context, roleName string) (*models.Role, error) {
-	var role models.Role
-	if err := r.db.WithContext(ctx).Where("name = ?", roleName).First(&role).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("role not found: %w", err)
-		}
-		return nil, fmt.Errorf("failed to get role by name: %w", err)
-	}
-	return &role, nil
+func (u *userRepo) GetRoleByName(ctx context.Context, roleName string) (*models.Role, error) {
+	return nil, nil
 }

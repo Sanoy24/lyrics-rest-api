@@ -1,68 +1,89 @@
-package handlers
+package services
 
 import (
-	"log/slog"
-	"net/http"
+	"context"
+	"time"
 
-	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	customerror "github.com/Sanoy24/lyrics-rest-api/pkg/custom_error"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
-	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
-type AuthHandler struct {
-	authService *services.AuthService
-	logger      *slog.Logger
+type AuthService struct {
+	userRepo  interfaces.UserRepository
+	jwtSecret string
+	jwtExpiry time.Duration
+	logger    *zap.Logger
 }
 
-func NewAuthHandler(authService *services.AuthService, logger *slog.Logger) *AuthHandler {
-	return &AuthHandler{
-		authService: authService,
-		logger:      logger,
+func NewUserService(userRepo interfaces.UserRepository, jwtSecret string, jwtExpiry time.Duration, logger *zap.Logger) *AuthService {
+	return &AuthService{
+		userRepo:  userRepo,
+		jwtSecret: jwtSecret,
+		jwtExpiry: jwtExpiry,
+		logger:    logger,
 	}
 }
 
-func (h *AuthHandler) Register(ctx *gin.Context) {
-	var req models.CreateUserRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		h.logger.Warn("Invlaid request in registration request", slog.String("error", err.Error()))
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
-			Status: false,
-			Error: &util.ErrorData{
-				Code:    "INVALID_JSON",
-				Message: "Invalid JSON format",
-				Details: err.Error(),
-			},
-		})
-		return
+func (s *AuthService) Register(ctx context.Context, req *models.CreateUserRequest) (*util.SuccessResponse, error) {
+	if _, err := s.userRepo.GetUserByEmail(ctx, req.Email); err == nil {
+		s.logger.Info("user already exists", zap.String("email", req.Email))
+		return nil, customerror.ErrUserExists
 	}
-	h.logger.Info("Registration attempt", slog.String("email", req.Username), slog.String("username", req.Email))
-
-	response, err := h.authService.Register(ctx.Request.Context(), &req)
+	hash, err := util.HashPassword(req.Password)
 	if err != nil {
-		h.handleError(ctx, err)
-		return
+		s.logger.Error("failed to hash password", zap.Error(err))
+		return nil, customerror.ErrInternalServer
 	}
+	user := &models.User{
+		Username:  req.Username,
+		Email:     req.Email,
+		Password:  hash,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Avatar:    req.Avatar,
+		RoleID:    1,
+	}
+	if err := s.userRepo.CreateUser(ctx, user); err != nil {
+		s.logger.Error("failed to create user", zap.Error(err))
+		return nil, customerror.ErrInternalServer
+	}
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "user created successfully",
+		Data: map[string]any{
+			"user": *user.ToResponse(),
+		},
+	}, nil
 
-	ctx.JSON(http.StatusCreated, response)
 }
 
-func (h *AuthHandler) handleError(ctx *gin.Context, err error) {
-	if appError, ok := err.(*customerror.AppError); ok {
-		ctx.JSON(appError.StatusCode, util.ErrorResponse{
-			Status: false,
-			Error: &util.ErrorData{
-				Code:    appError.Code,
-				Message: appError.Message,
-			},
-		})
-		return
-	}
-	h.logger.Error("Unhandled error in auth handler", slog.String("error", err.Error()))
-	ctx.JSON(http.StatusInternalServerError, &util.ErrorData{
-		Code:    "INTERNAL_ERROR",
-		Message: "Internal server error",
-	})
+func (s *AuthService) Login() {
+
+}
+
+func (s *AuthService) Logout() {
+
+}
+
+func (s *AuthService) RefreshToken() {
+
+}
+
+func (s *AuthService) ForgotPassword() {
+
+}
+
+func (s *AuthService) ResetPassword() {
+
+}
+
+func (s *AuthService) ChangePassword() {
+
+}
+
+func (s *AuthService) DeleteAccount() {
+
 }

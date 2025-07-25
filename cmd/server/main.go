@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,12 +18,13 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/database"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 func main() {
 	cfg, err := config.LoadConfig()
-	logger := setupLogger(cfg)
+	logger := setupLogger()
 
 	runMigrations := flag.Bool("migrate", false, "Run database migrations and exit")
 	runSeeder := flag.Bool("seed", false, "Run database seeder and exit")
@@ -103,36 +103,31 @@ func gracefulShutdown(server *http.Server) {
 	log.Println("Server exited gracefully.")
 }
 
-func setupRouter(db *gorm.DB, logger *slog.Logger, cfg *config.Config) *gin.Engine {
+func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engine {
 	router := gin.Default()
-	userRepo := user.NewPostgresRepository(db, logger)
-	userService := services.NewAuthService(userRepo, cfg.JWT.ExpireIn, cfg.JWT.Secret, logger)
+	userRepo := user.NewUserRepo(db, logger)
+	userService := services.NewUserService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
 	authHandler := handlers.NewAuthHandler(userService, logger)
-	healthCheck := handlers.NewHealthHandler()
-	router.GET("/health", healthCheck.HealthCheck)
+	// healthCheck := handlers.NewHealthHandler()
+	// router.GET("/health", healthCheck.HealthCheck)
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			// auth.POST("/login", authHandler.Login)
 		}
 	}
 
 	return router
 }
 
-func setupLogger(cfg *config.Config) *slog.Logger {
-	var handler slog.Handler
-	if cfg.Server.Env == "release" {
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelInfo,
-		})
-	} else {
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		})
+func setupLogger() *zap.Logger {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal("Failed to initialize logger:", err)
 	}
-	return slog.New(handler)
+
+	return logger
 
 }
