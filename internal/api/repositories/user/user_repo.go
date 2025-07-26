@@ -71,7 +71,7 @@ func (u *userRepo) GetRoleByName(ctx context.Context, roleName string) (*models.
 
 func (u *userRepo) GetByUsernameOrPassword(ctx context.Context, identifier string) (*models.User, error) {
 	var user models.User
-	if err := u.db.WithContext(ctx).Where("username = ? OR email = ?", identifier, identifier).First(&user).Error; err != nil {
+	if err := u.db.WithContext(ctx).Where("username = ? OR email = ?", identifier, identifier).Preload("Role").First(&user).Error; err != nil {
 		u.logger.Error("failed to get user by username or email", zap.Error(err), zap.String("identifier", identifier))
 		return nil, err
 	}

@@ -13,10 +13,11 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID int, email, secretKey string, expiresIn time.Duration) (string, error) {
+func GenerateJWT(userID int, email, role string, secretKey string, expiresIn time.Duration) (string, error) {
 	claims := JWTClaims{
 		UserID: userID,
 		Email:  email,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

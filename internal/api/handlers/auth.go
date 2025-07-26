@@ -60,6 +60,7 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.UserLoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.logger.Info("Invalid request in login request", zap.String("error", err.Error()))
 		ctx.JSON(http.StatusBadRequest, customerror.ErrInvalidCredentials)
 		return
 	}

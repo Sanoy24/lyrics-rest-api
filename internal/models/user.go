@@ -66,7 +66,7 @@ type UserResponse struct {
 	Verified  bool   `json:"verified"`
 	Active    bool   `json:"active"`
 	RoleID    uint   `json:"role_id"`
-	// Role      Role   `json:"role" binding:"omitempty"`
+	RoleName  string `json:"role" binding:"omitempty"`
 }
 
 type PaginatedUserResponse struct {
@@ -89,5 +89,6 @@ func (u *User) ToResponse() *UserResponse {
 		Verified:  u.Verified,
 		Active:    u.Active,
 		RoleID:    u.RoleID,
+		RoleName:  u.Role.Name,
 	}
 }
