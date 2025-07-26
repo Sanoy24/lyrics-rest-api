@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	ErrUserExists     = NewAppError("USER_EXISTS", "User with this email or username already exists", http.StatusConflict)
-	ErrUserNotFound   = NewAppError("USER_NOT_FOUND", "User not found", http.StatusNotFound)
-	ErrInvalidInput   = NewAppError("INVALID_INPUT", "Invalid input data", http.StatusBadRequest)
-	ErrInternalServer = NewAppError("INTERNAL_ERROR", "Internal server error", http.StatusInternalServerError)
-	ErrUnauthorized   = NewAppError("UNAUTHORIZED", "Unauthorized access", http.StatusUnauthorized)
-	ErrForbidden      = NewAppError("FORBIDDEN", "Access forbidden", http.StatusForbidden)
+	ErrUserExists         = NewAppError("USER_EXISTS", "User with this email or username already exists", http.StatusConflict)
+	ErrUserNotFound       = NewAppError("USER_NOT_FOUND", "User not found", http.StatusNotFound)
+	ErrInvalidInput       = NewAppError("INVALID_INPUT", "Invalid input data", http.StatusBadRequest)
+	ErrInternalServer     = NewAppError("INTERNAL_ERROR", "Internal server error", http.StatusInternalServerError)
+	ErrUnauthorized       = NewAppError("UNAUTHORIZED", "Unauthorized access", http.StatusUnauthorized)
+	ErrForbidden          = NewAppError("FORBIDDEN", "Access forbidden", http.StatusForbidden)
+	ErrInvalidCredentials = NewAppError("INVALID_CREDENTIALS", "Invalid credentials", http.StatusUnauthorized)
 )
 
 type AppError struct {

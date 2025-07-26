@@ -16,4 +16,5 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetRoleByName(ctx context.Context, roleName string) (*models.Role, error)
+	GetByUsernameOrPassword(ctx context.Context, identifier string) (*models.User, error)
 }

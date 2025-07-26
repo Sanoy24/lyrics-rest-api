@@ -51,8 +51,8 @@ type UpdateUserRequest struct {
 }
 
 type UserLoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6,max=100"`
+	Identifier string `json:"identifier" binding:"required"`
+	Password   string `json:"password" binding:"required,min=6,max=100"`
 }
 
 type UserResponse struct {
@@ -66,7 +66,7 @@ type UserResponse struct {
 	Verified  bool   `json:"verified"`
 	Active    bool   `json:"active"`
 	RoleID    uint   `json:"role_id"`
-	Role      Role   `json:"role" binding:"omitempty"`
+	// Role      Role   `json:"role" binding:"omitempty"`
 }
 
 type PaginatedUserResponse struct {

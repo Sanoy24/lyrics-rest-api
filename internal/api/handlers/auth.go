@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
@@ -27,7 +28,7 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.CreateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		h.logger.Warn("Invlaid request in registration request", zap.String("error", err.Error()))
+		// h.logger.Warn("Invlaid request in registration request", zap.String("error", err.Error()))
 		ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
 			Status: false,
 			Error: &util.ErrorData{
@@ -38,7 +39,7 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 		})
 		return
 	}
-	h.logger.Info("Registration attempt", zap.String("email", req.Username), zap.String("username", req.Email))
+	// h.logger.Info("Registration attempt", zap.String("email", req.Username), zap.String("username", req.Email))
 
 	response, err := h.authService.Register(ctx.Request.Context(), &req)
 	if err != nil {
@@ -46,13 +47,34 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 			Status: false,
 			Error: &util.ErrorData{
 				Code:    "INTERNAL_ERROR",
-				Message: "Internal server error",
+				Message: "Internal server eerror",
 				Details: err.Error(),
 			},
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusCreated, response)
+}
+
+func (h *AuthHandler) Login(ctx *gin.Context) {
+	var req models.UserLoginRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, customerror.ErrInvalidCredentials)
+		return
+	}
+	response, err := h.authService.Login(ctx.Request.Context(), &req)
+	if errors.Is(err, customerror.ErrInvalidCredentials) {
+		ctx.JSON(http.StatusUnauthorized, customerror.ErrInvalidCredentials)
+		return
+	}
+	if errors.Is(err, customerror.ErrInternalServer) {
+		ctx.JSON(http.StatusInternalServerError, customerror.ErrInternalServer)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response)
+
 }
 
 func (h *AuthHandler) handleError(ctx *gin.Context, err error) {

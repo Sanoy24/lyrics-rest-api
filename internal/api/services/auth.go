@@ -34,7 +34,7 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 	}
 	hash, err := util.HashPassword(req.Password)
 	if err != nil {
-		s.logger.Error("failed to hash password", zap.Error(err))
+		s.logger.Info("failed to hash password", zap.Error(err))
 		return nil, customerror.ErrInternalServer
 	}
 	user := &models.User{
@@ -60,7 +60,30 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 
 }
 
-func (s *AuthService) Login() {
+func (s *AuthService) Login(ctx context.Context, req *models.UserLoginRequest) (*util.SuccessResponse, error) {
+	user, err := s.userRepo.GetByUsernameOrPassword(ctx, req.Identifier)
+	if err != nil {
+		s.logger.Info("failed to get user by username or email", zap.Error(err))
+		return nil, customerror.ErrInvalidCredentials
+	}
+	if !util.VerifyPassword(req.Password, user.Password) {
+		s.logger.Info("invalid password", zap.String("identifier", req.Identifier))
+		return nil, customerror.ErrInvalidCredentials
+	}
+	token, err := util.GenerateJWT(int(user.ID), user.Email, s.jwtSecret, s.jwtExpiry)
+	if err != nil {
+		s.logger.Error("failed to generate jwt token", zap.Error(err))
+		return nil, customerror.ErrInternalServer
+	}
+	s.logger.Info("user logged in successfully", zap.String("indentifier", req.Identifier))
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "user logged in successfully",
+		Data: map[string]any{
+			"user":  *user.ToResponse(),
+			"token": token,
+		},
+	}, nil
 
 }
 

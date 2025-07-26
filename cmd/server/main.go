@@ -115,7 +115,7 @@ func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
-			// auth.POST("/login", authHandler.Login)
+			auth.POST("/login", authHandler.Login)
 		}
 	}
 
