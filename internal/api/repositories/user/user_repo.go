@@ -66,7 +66,13 @@ func (u *userRepo) GetUserByUsername(ctx context.Context, username string) (*mod
 	return nil, nil
 }
 func (u *userRepo) GetRoleByName(ctx context.Context, roleName string) (*models.Role, error) {
-	return nil, nil
+	var role models.Role
+	if err := u.db.WithContext(ctx).Where("name=?", roleName).First(&role).Error; err != nil {
+		u.logger.Error("failed to get role by name", zap.Error(err), zap.String("role_name", roleName))
+		return nil, err
+	}
+	u.logger.Info("role retrieved successfully", zap.String("role_name", roleName))
+	return &role, nil
 }
 
 func (u *userRepo) GetByUsernameOrPassword(ctx context.Context, identifier string) (*models.User, error) {

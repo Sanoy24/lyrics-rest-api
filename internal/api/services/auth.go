@@ -37,6 +37,12 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 		s.logger.Info("failed to hash password", zap.Error(err))
 		return nil, customerror.ErrInternalServer
 	}
+	role, err := s.userRepo.GetRoleByName(ctx, "user")
+	s.logger.Info("role", zap.Int("role", int(role.ID)))
+	if err != nil {
+		s.logger.Info("failed to get role", zap.Error(err))
+		return nil, customerror.ErrInternalServer
+	}
 	user := &models.User{
 		Username:  req.Username,
 		Email:     req.Email,
@@ -44,7 +50,7 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Avatar:    req.Avatar,
-		RoleID:    1,
+		RoleID:    role.ID,
 	}
 	if err := s.userRepo.CreateUser(ctx, user); err != nil {
 		s.logger.Error("failed to create user", zap.Error(err))
