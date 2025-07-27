@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/middleware"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/user"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
@@ -106,16 +107,29 @@ func gracefulShutdown(server *http.Server) {
 func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engine {
 	router := gin.Default()
 	userRepo := user.NewUserRepo(db, logger)
-	userService := services.NewUserService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
-	authHandler := handlers.NewAuthHandler(userService, logger)
+	authService := services.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
+	authHandler := handlers.NewAuthHandler(authService, logger)
+	userService := services.NewUserService(userRepo, logger)
+	userHandler := handlers.NewUserHandler(userService, logger)
 	// healthCheck := handlers.NewHealthHandler()
 	// router.GET("/health", healthCheck.HealthCheck)
+	router.Use(middleware.LoggerMiddleware(logger))
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
+		}
+	}
+
+	protected := router.Group("/api/v1")
+	protected.Use(middleware.AuthMiddleware(cfg), middleware.RequirePermission("song:create"))
+	{
+		user := protected.Group("/users")
+		{
+			user.GET("/me", userHandler.GetCurrentUser)
+			user.PUT("/me", nil)
 		}
 	}
 

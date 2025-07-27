@@ -3,10 +3,12 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
@@ -38,9 +40,53 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+		zap.L().Info("Authenticated user", zap.String("email", claims.Email))
 		ctx.Set("user_id", claims.UserID)
-		ctx.Set("username", claims.Email)
+		ctx.Set("email", claims.Email)
 		ctx.Set("role", claims.Role)
+		ctx.Set("permissions", claims.Permission)
 		ctx.Next()
+	}
+}
+
+func LoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Start time for latency measurement
+		start := time.Now()
+
+		// Process request
+		c.Next()
+
+		// Calculate latency
+		latency := time.Since(start)
+
+		// Log request details
+		logger.Info("http request",
+			zap.String("method", c.Request.Method),
+			zap.String("path", c.Request.URL.Path),
+			zap.Int("status", c.Writer.Status()),
+			zap.Duration("latency", latency),
+			zap.String("client_ip", c.ClientIP()),
+			zap.String("user_agent", c.Request.UserAgent()),
+		)
+	}
+}
+
+func RequirePermission(required string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		val, ok := c.Get("permissions")
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "No permissions found", "data": val})
+			return
+		}
+
+		for _, p := range val.([]string) {
+			if p == required {
+				c.Next()
+				return
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
 	}
 }

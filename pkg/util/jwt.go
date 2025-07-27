@@ -5,21 +5,24 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 )
 
 type JWTClaims struct {
-	UserID int    `json:"user_id"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID     int      `json:"user_id"`
+	Email      string   `json:"email"`
+	Role       string   `json:"role"`
+	Permission []string `json:"permission"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID int, email, role string, secretKey string, expiresIn time.Duration) (string, error) {
+func GenerateJWT(userID int, permission []string, email, role string, secretKey string, expiresIn time.Duration) (string, error) {
 	fmt.Println("EXPIRES at", jwt.NewNumericDate(time.Now().Add(expiresIn)))
 	claims := JWTClaims{
-		UserID: userID,
-		Email:  email,
-		Role:   role,
+		UserID:     userID,
+		Email:      email,
+		Role:       role,
+		Permission: permission,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -40,6 +43,7 @@ func ValidateToken(tokenString string, secretKey string) (*JWTClaims, error) {
 	}
 
 	if claims, ok := token.Claims.(*JWTClaims); ok && token.Valid {
+		zap.L().Info("token data", zap.Any("claims", claims))
 		return claims, nil
 	}
 

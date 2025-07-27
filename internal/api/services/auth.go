@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
@@ -18,7 +19,7 @@ type AuthService struct {
 	logger    *zap.Logger
 }
 
-func NewUserService(userRepo interfaces.UserRepository, jwtSecret string, jwtExpiry time.Duration, logger *zap.Logger) *AuthService {
+func NewAuthService(userRepo interfaces.UserRepository, jwtSecret string, jwtExpiry time.Duration, logger *zap.Logger) *AuthService {
 	return &AuthService{
 		userRepo:  userRepo,
 		jwtSecret: jwtSecret,
@@ -76,11 +77,19 @@ func (s *AuthService) Login(ctx context.Context, req *models.UserLoginRequest) (
 		s.logger.Info("invalid password", zap.String("identifier", req.Identifier))
 		return nil, customerror.ErrInvalidCredentials
 	}
-	token, err := util.GenerateJWT(int(user.ID), user.Email, user.Role.Name, s.jwtSecret, s.jwtExpiry)
+
+	permStrings := []string{}
+	for _, p := range user.Role.Permissions {
+		permStrings = append(permStrings, fmt.Sprintf("%s:%s", p.Resource, p.Action))
+	}
+	s.logger.Info("permissions", zap.Any("permissions", permStrings))
+
+	token, err := util.GenerateJWT(int(user.ID), permStrings, user.Email, user.Role.Name, s.jwtSecret, s.jwtExpiry)
 	if err != nil {
 		s.logger.Error("failed to generate jwt token", zap.Error(err))
 		return nil, customerror.ErrInternalServer
 	}
+	// s.logger.Info("user info", zap.Any("user data", user))
 	s.logger.Info("user logged in successfully", zap.String("indentifier", req.Identifier))
 	return &util.AuthResponse{
 		Token: token,
