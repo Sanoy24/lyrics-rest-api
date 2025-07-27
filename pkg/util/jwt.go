@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,6 +15,7 @@ type JWTClaims struct {
 }
 
 func GenerateJWT(userID int, email, role string, secretKey string, expiresIn time.Duration) (string, error) {
+	fmt.Println("EXPIRES at", jwt.NewNumericDate(time.Now().Add(expiresIn)))
 	claims := JWTClaims{
 		UserID: userID,
 		Email:  email,

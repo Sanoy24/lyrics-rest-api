@@ -29,16 +29,16 @@ type AuthResponse struct {
 }
 
 type Response struct {
-	Status  bool        `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   *ErrorData  `json:"error,omitempty"`
+	Status  bool       `json:"status"`
+	Message string     `json:"message"`
+	Data    any        `json:"data,omitempty"`
+	Error   *ErrorData `json:"error,omitempty"`
 }
 
 type ErrorData struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
 }
 
 type SuccessResponse struct {

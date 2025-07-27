@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -36,6 +37,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	expiresIn, _ := time.ParseDuration(getEnv("JWT_EXPIRES_IN", "30m"))
+	fmt.Println("EXPIRES IN", expiresIn)
 
 	return &Config{
 		Server: ServerConfig{
