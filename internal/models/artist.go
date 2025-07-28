@@ -25,3 +25,40 @@ type Artist struct {
 	Albums      []Album      `json:"albums" gorm:"foreignKey:ArtistID"`
 	Annotations []Annotation `json:"annotations" gorm:"foreignKey:ArtistID"`
 }
+
+type CreateArtistRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Slug        string `json:"slug" binding:"required"`
+	Description string `json:"description,omitempty"`
+	Image       string `json:"image,omitempty"`
+	HeaderImage string `json:"header_image,omitempty"`
+	Verified    bool   `json:"verified,omitempty"`
+	UserID      uint   `json:"user_id" binding:"required"`
+}
+
+type UpdateArtistRequest struct {
+	Name        *string `json:"name,omitempty"`
+	Slug        *string `json:"slug,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Image       *string `json:"image,omitempty"`
+	HeaderImage *string `json:"header_image,omitempty"`
+	Verified    *bool   `json:"verified,omitempty"`
+}
+
+type ArtistResponse struct {
+	ID       uint   `json:"id"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+	Verified bool   `json:"verified"`
+	UserID   uint   `json:"user_id"`
+}
+
+func (a *Artist) ToResponse() *ArtistResponse {
+	return &ArtistResponse{
+		ID:       a.ID,
+		Name:     a.Name,
+		Slug:     a.Slug,
+		Verified: a.Verified,
+		UserID:   a.UserID,
+	}
+}

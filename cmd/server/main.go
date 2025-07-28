@@ -111,8 +111,8 @@ func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	authHandler := handlers.NewAuthHandler(authService, logger)
 	userService := services.NewUserService(userRepo, logger)
 	userHandler := handlers.NewUserHandler(userService, logger)
-	// healthCheck := handlers.NewHealthHandler()
-	// router.GET("/health", healthCheck.HealthCheck)
+	healthCheck := handlers.NewHealthHandler(logger)
+	router.GET("/health", healthCheck.HealthCheck)
 	router.Use(middleware.LoggerMiddleware(logger))
 	v1 := router.Group("/api/v1")
 	{
