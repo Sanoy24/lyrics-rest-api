@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -80,11 +81,9 @@ func RequirePermission(required string) gin.HandlerFunc {
 			return
 		}
 
-		for _, p := range val.([]string) {
-			if p == required {
-				c.Next()
-				return
-			}
+		if slices.Contains(val.([]string), required) {
+			c.Next()
+			return
 		}
 
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Permission denied"})

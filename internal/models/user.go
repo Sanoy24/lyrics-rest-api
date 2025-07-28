@@ -92,3 +92,13 @@ func (u *User) ToResponse() *UserResponse {
 		RoleName:  u.Role.Name,
 	}
 }
+
+func (u *User) ToPublicResponse() *UserResponse {
+	return &UserResponse{
+		ID:       u.ID,
+		Username: u.Username,
+		Bio:      u.Bio,
+		Avatar:   u.Avatar,
+		Verified: u.Verified,
+	}
+}
