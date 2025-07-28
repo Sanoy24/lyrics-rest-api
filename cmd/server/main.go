@@ -124,12 +124,13 @@ func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	}
 
 	protected := router.Group("/api/v1")
-	protected.Use(middleware.AuthMiddleware(cfg), middleware.RequirePermission("song:read"))
+	protected.Use(middleware.AuthMiddleware(cfg))
 	{
 		user := protected.Group("/users")
 		{
 			user.GET("/me", userHandler.GetCurrentUser)
 			user.GET("/:id", userHandler.GetPublicUser)
+			user.PUT("/me", userHandler.UpdateUser)
 		}
 	}
 

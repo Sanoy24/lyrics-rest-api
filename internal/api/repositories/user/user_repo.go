@@ -44,7 +44,13 @@ func (u *userRepo) GetUserByID(ctx context.Context, id int) (*models.User, error
 	return &user, nil
 }
 
-func (u *userRepo) UpdateUser(ctx context.Context, user *models.User) error {
+func (u *userRepo) UpdateUser(ctx context.Context, id int, user *models.UpdateUserRequest) error {
+	user.UpdatedAt = time.Now()
+	if err := u.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Updates(&user).Error; err != nil {
+		u.logger.Error("failed to update user", zap.Error(err))
+		return err
+	}
+	u.logger.Info("user updated successfully")
 	return nil
 }
 func (u *userRepo) DeleteUser(ctx context.Context, id int) error {

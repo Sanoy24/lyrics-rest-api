@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
+	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -96,6 +97,39 @@ func (u *UserHandler) GetPublicUser(ctx *gin.Context) {
 		Data: map[string]any{
 			"user": *user.ToPublicResponse(),
 		},
+	})
+
+}
+
+func (u *UserHandler) UpdateUser(ctx *gin.Context) {
+	var req models.UpdateUserRequest
+	id := ctx.GetInt("user_id")
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INVALID_JSON",
+				Message: "Invalid JSON format",
+				Details: err.Error(),
+			},
+		})
+		return
+	}
+	if err := u.userService.UpdateUser(ctx.Request.Context(), id, &req); err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, util.SuccessResponse{
+		Status:  true,
+		Message: "User updated successfully",
 	})
 
 }

@@ -41,13 +41,14 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	Username  string `json:"username" binding:"omitempty,min=3,max=30"` // Optional
-	Email     string `json:"email" binding:"omitempty,email"`
-	Password  string `json:"password" binding:"omitempty,min=6,max=100"` // Optional
-	FirstName string `json:"first_name" binding:"omitempty,max=50"`      // Optional
-	LastName  string `json:"last_name" binding:"omitempty,max=50"`       // Optional
-	Bio       string `json:"bio" binding:"omitempty,max=500"`            // Optional
-	Avatar    string `json:"avatar" binding:"omitempty,url"`             // Optional
+	Username  string    `json:"username" binding:"omitempty,min=3,max=30"` // Optional
+	Email     string    `json:"email" binding:"omitempty,email"`
+	Password  string    `json:"password" binding:"omitempty,min=6,max=100"` // Optional
+	FirstName string    `json:"first_name" binding:"omitempty,max=50"`      // Optional
+	LastName  string    `json:"last_name" binding:"omitempty,max=50"`       // Optional
+	Bio       string    `json:"bio" binding:"omitempty,max=500"`            // Optional
+	Avatar    string    `json:"avatar" binding:"omitempty,url"`             // Optional
+	UpdatedAt time.Time `json:"-" binding:"omitempty"`
 }
 
 type UserLoginRequest struct {

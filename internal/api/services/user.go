@@ -28,3 +28,11 @@ func (s *UserService) GetCurrentUser(ctx context.Context, id int) (*models.User,
 	}
 	return user, nil
 }
+
+func (s *UserService) UpdateUser(ctx context.Context, id int, req *models.UpdateUserRequest) error {
+	if err := s.userRepo.UpdateUser(ctx, id, req); err != nil {
+		s.logger.Error("failed to update user", zap.Error(err))
+		return err
+	}
+	return nil
+}
