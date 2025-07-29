@@ -49,3 +49,41 @@ func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArti
 			"artist": *artist.ToResponse(),
 		}}, nil
 }
+
+func (a *ArtistService) GetAllArtists(ctx context.Context) (*util.SuccessResponse, error) {
+	artists, err := a.artistRepo.GetAllArtists(ctx)
+	if err != nil {
+		a.logger.Error("failed to get artists", zap.Error(err))
+		return nil, err
+	}
+
+	var artistResponse []models.ArtistResponse
+
+	for _, artist := range artists {
+		artistResponse = append(artistResponse, *artist.ToResponse())
+
+	}
+	a.logger.Info("artists fetched successfully")
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "artists fetched successfully",
+		Data: map[string]any{
+			"artists": artistResponse,
+		}}, nil
+
+}
+
+func (a *ArtistService) GetArtistByID(ctx context.Context, id int) (*util.SuccessResponse, error) {
+	artist, err := a.artistRepo.GetArtistByID(ctx, id)
+	if err != nil {
+		a.logger.Error("failed to get artist", zap.Error(err))
+		return nil, err
+	}
+	a.logger.Info("artist fetched successfully", zap.Int("artist_id", id))
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "artist fetched successfully",
+		Data: map[string]any{
+			"artist": *artist.ToResponse(),
+		}}, nil
+}

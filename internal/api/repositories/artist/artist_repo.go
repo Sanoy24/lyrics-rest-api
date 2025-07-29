@@ -31,13 +31,23 @@ func (r *artistRepo) CreateArtist(ctx context.Context, artist *models.Artist) er
 }
 
 // - GET /api/v1/artists → List all artists
-func (r *artistRepo) GetAllArtists(ctx context.Context) ([]*models.Artist, error) {
-	return nil, nil
+func (r *artistRepo) GetAllArtists(ctx context.Context) ([]models.Artist, error) {
+	var artist []models.Artist
+	if err := r.db.WithContext(ctx).Find(&artist).Error; err != nil {
+		r.logger.Error("failed to get artists", zap.Error(err))
+		return nil, err
+	}
+	return artist, nil
 }
 
 // - GET /api/v1/artists/:id → Get artist details
 func (r *artistRepo) GetArtistByID(ctx context.Context, id int) (*models.Artist, error) {
-	return nil, nil
+	var artist models.Artist
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&artist).Error; err != nil {
+		r.logger.Error("failed to get artist", zap.Error(err))
+		return nil, err
+	}
+	return &artist, nil
 }
 
 // - PUT /api/v1/artists/:id → Update artist details

@@ -11,7 +11,7 @@ type ArtistRepository interface {
 	// - POST /api/v1/artists → Add new artist (admin/mod)
 	CreateArtist(ctx context.Context, artist *models.Artist) error
 	// - GET /api/v1/artists → List all artists
-	GetAllArtists(ctx context.Context) ([]*models.Artist, error)
+	GetAllArtists(ctx context.Context) ([]models.Artist, error)
 	// - GET /api/v1/artists/:id → Get artist details
 	GetArtistByID(ctx context.Context, id int) (*models.Artist, error)
 	// - PUT /api/v1/artists/:id → Update artist details

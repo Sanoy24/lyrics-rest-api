@@ -56,6 +56,9 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		artist := protected.Group("/artists")
 		{
 			artist.POST("", artistHandler.CreateArtist)
+			artist.GET("", artistHandler.GetAllArtists)
+			// get single artist
+			// update artist
 		}
 	}
 

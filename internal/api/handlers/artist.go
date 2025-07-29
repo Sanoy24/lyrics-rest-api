@@ -60,3 +60,26 @@ func (h *ArtistHandler) CreateArtist(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusCreated, response)
 }
+
+func (h *ArtistHandler) GetAllArtists(ctx *gin.Context) {
+	response, err := h.artistService.GetAllArtists(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (h *ArtistHandler) GetArtistByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+	response, err := h.artistService.GetArtistByID(ctx.Request.Context(), id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util
