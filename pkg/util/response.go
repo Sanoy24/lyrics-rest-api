@@ -48,6 +48,17 @@ type SuccessResponse struct {
 }
 
 type ErrorResponse struct {
-	Status bool       `json:"status"`
-	Error  *ErrorData `json:"error"`
+	Status bool `json:"status"`
+	Error  any  `json:"error"`
+}
+
+type FieldError struct {
+	Field string `json:"field"`
+	Error string `json:"error"`
+}
+
+type AppError struct {
+	Code    string
+	Message string
+	Details []FieldError
 }

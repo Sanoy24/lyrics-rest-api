@@ -22,7 +22,7 @@ func NewArtistRepo(db *gorm.DB, logger *zap.Logger) interfaces.ArtistRepository 
 }
 
 func (r *artistRepo) CreateArtist(ctx context.Context, artist *models.Artist) error {
-	if err := r.db.WithContext(ctx).Create(&artist).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(artist).Error; err != nil {
 		r.logger.Error("failed to create artist", zap.Error(err))
 		return err
 	}

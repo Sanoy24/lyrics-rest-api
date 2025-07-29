@@ -11,16 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
-	"github.com/Sanoy24/lyrics-rest-api/internal/api/middleware"
-	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/user"
-	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/router"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/database"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -70,7 +65,7 @@ func main() {
 		return
 	}
 
-	router := setupRouter(db, logger, cfg)
+	router := router.SetupRouter(db, logger, cfg)
 
 	server := &http.Server{
 		Addr:    ":" + cfg.Server.Port,
@@ -102,39 +97,6 @@ func gracefulShutdown(server *http.Server) {
 	}
 
 	log.Println("Server exited gracefully.")
-}
-
-func setupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engine {
-	router := gin.Default()
-	userRepo := user.NewUserRepo(db, logger)
-	authService := services.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
-	authHandler := handlers.NewAuthHandler(authService, logger)
-	userService := services.NewUserService(userRepo, logger)
-	userHandler := handlers.NewUserHandler(userService, logger)
-	healthCheck := handlers.NewHealthHandler(logger)
-	router.GET("/health", healthCheck.HealthCheck)
-	router.Use(middleware.LoggerMiddleware(logger))
-	v1 := router.Group("/api/v1")
-	{
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
-		}
-	}
-
-	protected := router.Group("/api/v1")
-	protected.Use(middleware.AuthMiddleware(cfg))
-	{
-		user := protected.Group("/users")
-		{
-			user.GET("/me", userHandler.GetCurrentUser)
-			user.GET("/:id", userHandler.GetPublicUser)
-			user.PUT("/me", userHandler.UpdateUser)
-		}
-	}
-
-	return router
 }
 
 func setupLogger() *zap.Logger {

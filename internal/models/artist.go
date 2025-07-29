@@ -27,22 +27,22 @@ type Artist struct {
 }
 
 type CreateArtistRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Slug        string `json:"slug" binding:"required"`
+	Name        string `json:"name" binding:"required" validate:"required,min=2,max=80"`
+	Slug        string `json:"slug" binding:"required" validate:"required"`
+	Description string `json:"description,omitempty" validate:"omitempty"`
+	Image       string `json:"image,omitempty" validate:"omitempty,url"`
+	HeaderImage string `json:"header_image,omitempty" validate:"omitempty,url"`
+	Verified    bool   `json:"verified"`
+	UserID      int    `json:"user_id,omitempty"`
+}
+
+type UpdateArtistRequest struct {
+	Name        string `json:"name,omitempty"`
+	Slug        string `json:"slug,omitempty"`
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image,omitempty"`
 	HeaderImage string `json:"header_image,omitempty"`
 	Verified    bool   `json:"verified,omitempty"`
-	UserID      uint   `json:"user_id" binding:"required"`
-}
-
-type UpdateArtistRequest struct {
-	Name        *string `json:"name,omitempty"`
-	Slug        *string `json:"slug,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Image       *string `json:"image,omitempty"`
-	HeaderImage *string `json:"header_image,omitempty"`
-	Verified    *bool   `json:"verified,omitempty"`
 }
 
 type ArtistResponse struct {

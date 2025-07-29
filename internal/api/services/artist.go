@@ -21,7 +21,13 @@ func NewArtistService(artistRepo interfaces.ArtistRepository, logger *zap.Logger
 	}
 }
 
-func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArtistRequest) (*util.SuccessResponse, error) {
+func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArtistRequest, id int) (*util.SuccessResponse, any) {
+
+	if appErr := util.ValidateStruct(req); appErr != nil {
+		a.logger.Warn("invalid artist request", zap.Any("error", appErr))
+		return nil, appErr
+	}
+
 	artist := &models.Artist{
 		Name:        req.Name,
 		Slug:        req.Slug,
@@ -29,7 +35,7 @@ func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArti
 		Image:       req.Image,
 		HeaderImage: req.HeaderImage,
 		Verified:    req.Verified,
-		UserID:      req.UserID,
+		UserID:      uint(id),
 	}
 	if err := a.artistRepo.CreateArtist(ctx, artist); err != nil {
 		a.logger.Error("failed to create artist", zap.Error(err))
