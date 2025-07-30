@@ -4,6 +4,7 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/middleware"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/artist"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/song"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/user"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
@@ -18,16 +19,19 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	// Intialize repo
 	userRepo := user.NewUserRepo(db, logger)
 	artistRepo := artist.NewArtistRepo(db, logger)
+	songRepo := song.NewSongRepo(db, logger)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
 	userService := services.NewUserService(userRepo, logger)
 	artistService := services.NewArtistService(artistRepo, logger)
+	songService := services.NewSongService(songRepo, artistRepo, logger)
 
 	// Initialize Handler
 	authHandler := handlers.NewAuthHandler(authService, logger)
 	userHandler := handlers.NewUserHandler(userService, logger)
 	artistHandler := handlers.NewArtistHandler(artistService, logger)
+	songHandler := handlers.NewSongHandler(songService, logger)
 
 	healthCheck := handlers.NewHealthHandler(logger)
 
@@ -64,9 +68,9 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			// get single artist
 			// update artist
 		}
-		song := protected.Group("/songs")
+		song := protected.Group("/song")
 		{
-			song.POST("", artistHandler.CreateArtist)
+			song.POST("", songHandler.CreateSong)
 		}
 
 	}

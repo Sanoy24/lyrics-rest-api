@@ -40,9 +40,10 @@ type CreateSongRequest struct {
 	Description   string `json:"description,omitempty" validate:"omitempty"`
 	Image         string `json:"image,omitempty" validate:"omitempty,url"`
 	ReleaseDate   string `json:"release_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
-	AlbumID       uint   `json:"album_id,omitempty" validate:"omitempty,min=1"`
+	AlbumID       *uint  `json:"album_id,omitempty" validate:"omitempty,min=1"`
 	ContributorID uint   `json:"contributor_id,omitempty" validate:"omitempty,min=1"`
 	Verified      bool   `json:"verified"`
+	ArtistIDs     []int  `json:"artist_ids" binding:"required" validate:"required,min=1"`
 }
 
 type UpdateSongRequest struct {
@@ -58,6 +59,6 @@ type UpdateSongRequest struct {
 }
 
 func (s *Song) BeforeCreate(tx *gorm.DB) (err error) {
-	s.Slug = fmt.Sprintf("%s-%s-%s", strings.Join(strings.Split(s.Artists[0].Name, " "), "-"), strings.Join(strings.Split(s.Title, " "), "-"), "lyrics")
+	s.Slug = fmt.Sprintf("%s-%s", strings.Join(strings.Split(s.Title, " "), "-"), "lyrics")
 	return
 }

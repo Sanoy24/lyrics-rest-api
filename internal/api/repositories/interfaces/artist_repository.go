@@ -20,4 +20,5 @@ type ArtistRepository interface {
 	DeleteArtist(ctx context.Context, id int) error
 	// get artists count
 	GetArtistsCount(ctx context.Context) (int64, error)
+	GetArtistByIds(ctx context.Context, ids []int) ([]models.Artist, error)
 }

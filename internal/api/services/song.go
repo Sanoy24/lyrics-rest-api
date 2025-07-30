@@ -10,14 +10,16 @@ import (
 )
 
 type SongService struct {
-	songRepo interfaces.SongRepository
-	logger   *zap.Logger
+	songRepo    interfaces.SongRepository
+	artistsRepo interfaces.ArtistRepository
+	logger      *zap.Logger
 }
 
-func NewSongService(songRepo interfaces.SongRepository, logger *zap.Logger) *SongService {
+func NewSongService(songRepo interfaces.SongRepository, artistRepo interfaces.ArtistRepository, logger *zap.Logger) *SongService {
 	return &SongService{
-		songRepo: songRepo,
-		logger:   logger,
+		songRepo:    songRepo,
+		artistsRepo: artistRepo,
+		logger:      logger,
 	}
 }
 
@@ -32,10 +34,20 @@ func (s *SongService) CreateSong(ctx context.Context, req *models.CreateSongRequ
 		Lyrics:        &req.Lyrics,
 		Description:   req.Description,
 		Image:         req.Image,
-		AlbumID:       &req.AlbumID,
+		AlbumID:       req.AlbumID,
 		ContributorID: req.ContributorID,
 		Verified:      req.Verified,
 	}
+
+	if len(req.ArtistIDs) > 0 {
+		artists, err := s.artistsRepo.GetArtistByIds(ctx, req.ArtistIDs)
+		if err != nil {
+			s.logger.Error("failed to fetch artists", zap.Error(err))
+			return nil, err
+		}
+		song.Artists = artists
+	}
+
 	if err := s.songRepo.CreateSong(ctx, song); err != nil {
 		return nil, err
 
