@@ -31,13 +31,13 @@ func (r *artistRepo) CreateArtist(ctx context.Context, artist *models.Artist) er
 }
 
 // - GET /api/v1/artists → List all artists
-func (r *artistRepo) GetAllArtists(ctx context.Context) ([]models.Artist, error) {
-	var artist []models.Artist
-	if err := r.db.WithContext(ctx).Find(&artist).Error; err != nil {
+func (r *artistRepo) GetAllArtists(ctx context.Context, limit, offset int) ([]models.Artist, error) {
+	var artists []models.Artist
+	if err := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&artists).Error; err != nil {
 		r.logger.Error("failed to get artists", zap.Error(err))
-		return nil, err
+		return artists, err
 	}
-	return artist, nil
+	return artists, nil
 }
 
 // - GET /api/v1/artists/:id → Get artist details
@@ -68,4 +68,15 @@ func (r *artistRepo) DeleteArtist(ctx context.Context, id int) error {
 	}
 	r.logger.Info("Artist Deleted Successfully")
 	return nil
+}
+
+func (r *artistRepo) GetArtistsCount(ctx context.Context) (int64, error) {
+	var count int64
+
+	if err := r.db.WithContext(ctx).Model(&models.Artist{}).Count(&count).Error; err != nil {
+		r.logger.Error("failed to get artists count", zap.Error(err))
+		return count, err
+	}
+	return count, nil
+
 }

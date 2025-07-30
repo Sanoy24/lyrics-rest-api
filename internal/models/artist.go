@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -19,6 +20,7 @@ type Artist struct {
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+	IsDeleted   bool           `json:"is_deleted" gorm:"default:false"`
 
 	// Associations
 	Songs       []Song       `json:"songs" gorm:"many2many:song_artists;"`
@@ -28,7 +30,6 @@ type Artist struct {
 
 type CreateArtistRequest struct {
 	Name        string `json:"name" binding:"required" validate:"required,min=2,max=80"`
-	Slug        string `json:"slug" binding:"required" validate:"required"`
 	Description string `json:"description,omitempty" validate:"omitempty"`
 	Image       string `json:"image,omitempty" validate:"omitempty,url"`
 	HeaderImage string `json:"header_image,omitempty" validate:"omitempty,url"`
@@ -61,4 +62,9 @@ func (a *Artist) ToResponse() *ArtistResponse {
 		Verified: a.Verified,
 		UserID:   a.UserID,
 	}
+}
+
+func (a *Artist) BeforeCreate(tx *gorm.DB) (err error) {
+	a.Slug = strings.Join(strings.Split(a.Name, " "), "-")
+	return
 }

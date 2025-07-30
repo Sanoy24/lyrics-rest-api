@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"math"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
@@ -30,7 +31,6 @@ func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArti
 
 	artist := &models.Artist{
 		Name:        req.Name,
-		Slug:        req.Slug,
 		Description: req.Description,
 		Image:       req.Image,
 		HeaderImage: req.HeaderImage,
@@ -50,14 +50,35 @@ func (a *ArtistService) CreateArtist(ctx context.Context, req *models.CreateArti
 		}}, nil
 }
 
-func (a *ArtistService) GetAllArtists(ctx context.Context) (*util.SuccessResponse, error) {
-	artists, err := a.artistRepo.GetAllArtists(ctx)
+func (a *ArtistService) GetAllArtists(ctx context.Context, limit, offset int) (*util.SuccessResponse, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	if offset < 0 {
+		offset = 0
+	}
+
+	totalCount, err := a.artistRepo.GetArtistsCount(ctx)
+	if err != nil {
+		a.logger.Error("failed to get artists count", zap.Error(err))
+		return nil, err
+	}
+
+	artists, err := a.artistRepo.GetAllArtists(ctx, limit, offset)
 	if err != nil {
 		a.logger.Error("failed to get artists", zap.Error(err))
 		return nil, err
 	}
 
-	var artistResponse []models.ArtistResponse
+	artistResponse := make([]models.ArtistResponse, 0, len(artists))
+	totalPages := int(math.Ceil(float64(totalCount) / float64(limit)))
+	currentPage := (offset / limit) + 1
+	hasNext := currentPage < totalPages
+	hasPrev := currentPage > 1
 
 	for _, artist := range artists {
 		artistResponse = append(artistResponse, *artist.ToResponse())
@@ -69,6 +90,15 @@ func (a *ArtistService) GetAllArtists(ctx context.Context) (*util.SuccessRespons
 		Message: "artists fetched successfully",
 		Data: map[string]any{
 			"artists": artistResponse,
+			"pagination": map[string]any{
+				"total_count":  totalCount,
+				"total_pages":  totalPages,
+				"current_page": currentPage,
+				"limit":        limit,
+				"offset":       offset,
+				"has_next":     hasNext,
+				"has_previous": hasPrev,
+			},
 		}}, nil
 
 }

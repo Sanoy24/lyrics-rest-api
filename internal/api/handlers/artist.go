@@ -63,7 +63,11 @@ func (h *ArtistHandler) CreateArtist(ctx *gin.Context) {
 }
 
 func (h *ArtistHandler) GetAllArtists(ctx *gin.Context) {
-	response, err := h.artistService.GetAllArtists(ctx.Request.Context())
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	h.logger.Info("Getting all artists")
+	response, err := h.artistService.GetAllArtists(ctx.Request.Context(), limit, offset)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
 			Status: false,
