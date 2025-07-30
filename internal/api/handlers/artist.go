@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
@@ -78,8 +79,18 @@ func (h *ArtistHandler) GetAllArtists(ctx *gin.Context) {
 
 func (h *ArtistHandler) GetArtistByID(ctx *gin.Context) {
 	id := ctx.Param("id")
-	response, err := h.artistService.GetArtistByID(ctx.Request.Context(), id)
+	artistID, _ := strconv.Atoi(id)
+	response, err := h.artistService.GetArtistByID(ctx.Request.Context(), artistID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
 			Status: false,
-			Error: &util
+			Error: &util.ErrorResponse{
+				Status: false,
+				Error:  "Internal server error",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+
+}
