@@ -52,10 +52,20 @@ func (r *artistRepo) GetArtistByID(ctx context.Context, id int) (*models.Artist,
 
 // - PUT /api/v1/artists/:id → Update artist details
 func (r *artistRepo) UpdateArtist(ctx context.Context, id int, artist *models.UpdateArtistRequest) error {
+	if err := r.db.WithContext(ctx).Model(&models.Artist{}).Where("id = ?", id).Updates(artist).Error; err != nil {
+		r.logger.Error("failed to update artist", zap.Error(err))
+		return err
+	}
 	return nil
 }
 
 // - DELETE /api/v1/artists/:id → Delete artist
 func (r *artistRepo) DeleteArtist(ctx context.Context, id int) error {
+	artist := &models.Artist{ID: uint(id)}
+	if err := r.db.WithContext(ctx).Delete(artist).Error; err != nil {
+		r.logger.Error("failed to delete artist", zap.Error(err))
+		return err
+	}
+	r.logger.Info("Artist Deleted Successfully")
 	return nil
 }

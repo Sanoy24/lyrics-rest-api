@@ -94,3 +94,59 @@ func (h *ArtistHandler) GetArtistByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 
 }
+
+func (h *ArtistHandler) UpdateArtist(ctx *gin.Context) {
+	var req models.UpdateArtistRequest
+	id := ctx.Param("id")
+	artistID, _ := strconv.Atoi(id)
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("failed to bind json", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_SERVER",
+				Message: "Internal server error",
+				Details: err.Error(),
+			},
+		})
+		return
+	}
+	response, err := h.artistService.UpdateArtist(ctx.Request.Context(), artistID, &req)
+	if err != nil {
+		if appErr, ok := err.(*util.AppError); ok {
+			ctx.JSON(http.StatusBadRequest, util.ErrorResponse{
+				Status: false,
+				Error:  appErr,
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_SERVER",
+				Message: "Internal server error",
+				Details: err,
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+}
+func (h *ArtistHandler) DeleteArtist(ctx *gin.Context) {
+	id := ctx.Param("id")
+	artistID, _ := strconv.Atoi(id)
+	response, err := h.artistService.DeleteArtist(ctx.Request.Context(), artistID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_SERVER",
+				Message: "Internal server error",
+				Details: err.Error(),
+			},
+		})
+		return
+
+	}
+	ctx.JSON(http.StatusOK, response)
+}

@@ -58,6 +58,9 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			artist.POST("", artistHandler.CreateArtist)
 			artist.GET("", artistHandler.GetAllArtists)
 			artist.GET("/:id", artistHandler.GetArtistByID)
+			artist.PUT("/:id", artistHandler.UpdateArtist)
+			artist.DELETE("/:id", artistHandler.DeleteArtist)
+			// get all artists")
 			// get single artist
 			// update artist
 		}

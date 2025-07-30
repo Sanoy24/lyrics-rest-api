@@ -87,3 +87,31 @@ func (a *ArtistService) GetArtistByID(ctx context.Context, id int) (*util.Succes
 			"artist": *artist.ToResponse(),
 		}}, nil
 }
+
+func (a *ArtistService) UpdateArtist(ctx context.Context, id int, updateData *models.UpdateArtistRequest) (*util.SuccessResponse, any) {
+	if appErr := util.ValidateStruct(updateData); appErr != nil {
+		a.logger.Warn("invalid artist request", zap.Any("error", appErr))
+		return nil, appErr
+	}
+	if err := a.artistRepo.UpdateArtist(ctx, id, updateData); err != nil {
+		a.logger.Info("failed to update artist", zap.Error(err))
+		return nil, err
+	}
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "artist updated successfully",
+	}, nil
+
+}
+
+func (a *ArtistService) DeleteArtist(ctx context.Context, id int) (*util.SuccessResponse, error) {
+	if err := a.artistRepo.DeleteArtist(ctx, id); err != nil {
+		a.logger.Error("failed to delete artist", zap.Error(err))
+		return nil, err
+	}
+	a.logger.Info("artist deleted successfully", zap.Int("artist_id", id))
+	return &util.SuccessResponse{
+		Status:  true,
+		Message: "artist deleted successfully",
+	}, nil
+}
