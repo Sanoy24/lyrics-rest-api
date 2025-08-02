@@ -82,7 +82,6 @@ func (a *ArtistService) GetAllArtists(ctx context.Context, limit, offset int) (*
 
 	for _, artist := range artists {
 		artistResponse = append(artistResponse, *artist.ToResponse())
-
 	}
 	a.logger.Info("artists fetched successfully")
 	return &util.SuccessResponse{

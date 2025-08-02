@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
@@ -62,4 +63,23 @@ func (h *SongHandler) CreateSong(ctx *gin.Context) {
 		Status: true,
 		Data:   response,
 	})
+}
+
+func (h *SongHandler) GetAllSongs(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+	data, err := h.songService.GetAllSongs(ctx.Request.Context(), limit, offset)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, data)
+
 }

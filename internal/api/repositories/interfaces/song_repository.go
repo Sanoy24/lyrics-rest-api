@@ -22,4 +22,5 @@ type SongRepository interface {
 	UpdateSong(ctx context.Context, id int, song *models.UpdateSongRequest) error
 	DeleteSong(ctx context.Context, id int) error
 	GetAllSongs(ctx context.Context, limit, offset int) ([]models.Song, error)
+	GetSongsCount(ctx context.Context) (int64, error)
 }

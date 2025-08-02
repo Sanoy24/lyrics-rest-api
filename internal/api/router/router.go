@@ -71,6 +71,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		song := protected.Group("/song")
 		{
 			song.POST("", songHandler.CreateSong)
+			song.GET("", songHandler.GetAllSongs)
 		}
 
 	}

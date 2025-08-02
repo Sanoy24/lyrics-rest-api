@@ -12,7 +12,7 @@ type Song struct {
 	ID            uint           `json:"id" gorm:"primaryKey"`
 	Title         string         `json:"title" gorm:"not null"`
 	Slug          string         `json:"slug" gorm:"unique;not null"`
-	Lyrics        *string        `json:"lyrics"`
+	Lyrics        string         `json:"lyrics"`
 	Description   string         `json:"description"`
 	Image         string         `json:"image"`
 	ReleaseDate   *time.Time     `json:"release_date"`
@@ -58,7 +58,30 @@ type UpdateSongRequest struct {
 	Verified      bool   `json:"verified,omitempty"`
 }
 
+type SongResponse struct {
+	Title         string `json:"title"`
+	Lyrics        string `json:"lyrics"`
+	Image         string `json:"image"`
+	ReleaseDate   string `json:"release_date"`
+	AlbumID       uint   `json:"album_id"`
+	ContributorID uint   `json:"contributor_id"`
+	Verified      bool   `json:"verified"`
+	ArtistIDs     []int  `json:"artist_ids"`
+}
+
 func (s *Song) BeforeCreate(tx *gorm.DB) (err error) {
 	s.Slug = fmt.Sprintf("%s-%s", strings.Join(strings.Split(s.Title, " "), "-"), "lyrics")
 	return
+}
+
+func (s Song) ToResponse() *SongResponse {
+	return &SongResponse{
+		Title:         s.Title,
+		Lyrics:        s.Lyrics,
+		Image:         s.Image,
+		ReleaseDate:   s.ReleaseDate.Format("2006-01-02"),
+		ContributorID: s.ContributorID,
+		Verified:      s.Verified,
+		ArtistIDs:     []int{},
+	}
 }

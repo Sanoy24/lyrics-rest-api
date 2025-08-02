@@ -10,17 +10,20 @@ type APIResponse struct {
 }
 
 type PaginatedResponse struct {
-	Sucess     bool       `json:"success"`
-	Message    string     `json:"message"`
-	Data       any        `json:"data"`
-	Pagination Pagination `json:"pagination"`
+	Sucess     bool        `json:"success"`
+	Message    string      `json:"message"`
+	Data       any         `json:"data"`
+	Pagination *Pagination `json:"pagination"`
 }
 
 type Pagination struct {
-	Page       int `json:"page"`
-	Limit      int `json:"limit"`
-	Total      int `json:"total"`
-	TotalPages int `json:"total_pages"`
+	HasNext     bool `json:"hasNext"`
+	HasPrev     bool `json:"hasPrev"`
+	CurrentPage int  `json:"currentPage"`
+	Page        int  `json:"page"`
+	Limit       int  `json:"limit"`
+	Total       int  `json:"total"`
+	TotalPages  int  `json:"total_pages"`
 }
 
 type AuthResponse struct {
