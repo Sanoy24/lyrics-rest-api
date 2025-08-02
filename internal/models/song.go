@@ -74,14 +74,12 @@ func (s *Song) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (s Song) ToResponse() *SongResponse {
+func (s *Song) ToResponse() *SongResponse {
 	return &SongResponse{
 		Title:         s.Title,
 		Lyrics:        s.Lyrics,
 		Image:         s.Image,
-		ReleaseDate:   s.ReleaseDate.Format("2006-01-02"),
 		ContributorID: s.ContributorID,
 		Verified:      s.Verified,
-		ArtistIDs:     []int{},
 	}
 }

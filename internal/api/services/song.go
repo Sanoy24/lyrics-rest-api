@@ -31,6 +31,12 @@ func (s *SongService) CreateSong(ctx context.Context, req *models.CreateSongRequ
 		req.ReleaseDate = time.Now().Format("2006-01-02")
 	}
 
+	releaseDate, err := time.Parse("2006-01-02", req.ReleaseDate)
+	if err != nil {
+		s.logger.Error("failed to parse release date", zap.Error(err))
+		return nil, err
+	}
+
 	song := &models.Song{
 		Title:         req.Title,
 		Lyrics:        req.Lyrics,
@@ -39,6 +45,7 @@ func (s *SongService) CreateSong(ctx context.Context, req *models.CreateSongRequ
 		AlbumID:       req.AlbumID,
 		ContributorID: req.ContributorID,
 		Verified:      req.Verified,
+		ReleaseDate:   &releaseDate,
 	}
 
 	if len(req.ArtistIDs) > 0 {
