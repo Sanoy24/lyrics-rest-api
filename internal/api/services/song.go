@@ -137,3 +137,10 @@ func (s *SongService) GetSongBySlug(ctx context.Context, slug string) (*models.S
 	}
 	return song, nil
 }
+
+func (s *SongService) DeleteSong(ctx context.Context, id int) error {
+	if err := s.songRepo.DeleteSong(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}
