@@ -28,3 +28,22 @@ type Annotation struct {
 	Comments []Comment `json:"comments" gorm:"foreignKey:AnnotationID"`
 	Votes    []Vote    `json:"votes" gorm:"foreignKey:AnnotationID"`
 }
+
+type CreateAnnotationRequest struct {
+	StartIndex int    `json:"start_index" binding:"required"`
+	EndIndex   int    `json:"end_index" binding:"required"`
+	Content    string `json:"content" binding:"required"`
+}
+
+type UpdateAnnotationRequest struct {
+	StartIndex *int   `json:"start_index,omitempty"`
+	EndIndex   *int   `json:"end_index,omitempty"`
+	Content    string `json:"content" binding:"required"`
+}
+
+type AnnotationSummary struct {
+	Count      int
+	AvgVotes   float64
+	Verified   int
+	Unverified int
+}
