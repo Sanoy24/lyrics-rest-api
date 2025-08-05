@@ -10,8 +10,8 @@ type Annotation struct {
 	ID         uint           `json:"id" gorm:"primaryKey"`
 	SongID     uint           `json:"song_id"`
 	Song       Song           `json:"song" gorm:"foreignKey:SongID"`
-	ArtistID   uint           `json:"artist_id"`
-	Artist     Artist         `json:"artist" gorm:"foreignKey:ArtistID"`
+	ArtistID   *uint          `json:"artist_id"`
+	Artist     *Artist        `json:"artist" gorm:"foreignKey:ArtistID"`
 	UserID     uint           `json:"user_id"`
 	User       User           `json:"user" gorm:"foreignKey:UserID"`
 	StartIndex int            `json:"start_index"`
@@ -33,7 +33,6 @@ type CreateAnnotationRequest struct {
 	StartIndex int    `json:"start_index" binding:"required"`
 	EndIndex   int    `json:"end_index" binding:"required"`
 	Content    string `json:"content" binding:"required"`
-	SongID     uint   `json:"song_id" binding:"required"`
 }
 
 type UpdateAnnotationRequest struct {

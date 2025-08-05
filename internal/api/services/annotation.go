@@ -14,9 +14,10 @@ type AnnotationService struct {
 	logger         *zap.Logger
 }
 
-func NewAnnotationService(annotationRepo interfaces.AnnotationRepository, logger *zap.Logger) *AnnotationService {
+func NewAnnotationService(annotationRepo interfaces.AnnotationRepository, songRepo interfaces.SongRepository, logger *zap.Logger) *AnnotationService {
 	return &AnnotationService{
 		annotationRepo: annotationRepo,
+		songRepo:       songRepo,
 		logger:         logger,
 	}
 }
