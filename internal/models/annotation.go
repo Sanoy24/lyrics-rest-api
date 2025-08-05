@@ -33,6 +33,7 @@ type CreateAnnotationRequest struct {
 	StartIndex int    `json:"start_index" binding:"required"`
 	EndIndex   int    `json:"end_index" binding:"required"`
 	Content    string `json:"content" binding:"required"`
+	SongID     uint   `json:"song_id" binding:"required"`
 }
 
 type UpdateAnnotationRequest struct {

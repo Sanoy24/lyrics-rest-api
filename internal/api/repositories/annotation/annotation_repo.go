@@ -61,12 +61,26 @@ func (a *annotationRepo) GetAnnotationsBySongID(ctx context.Context, songID uint
 }
 
 func (a *annotationRepo) GetAnnotationByID(ctx context.Context, annotationID uint) (*models.Annotation, error) {
-	return nil, nil
+	var annotation models.Annotation
+	if err := a.db.WithContext(ctx).Where("id = ?", annotationID).First(&annotation).Error; err != nil {
+		return nil, err
+	}
+	return &annotation, nil
 }
+
 func (a *annotationRepo) UpdateAnnotation(ctx context.Context, annotationID uint, updates *models.UpdateAnnotationRequest) error {
+
+	if err := a.db.WithContext(ctx).Model(&models.Annotation{}).Where("id = ?", annotationID).Updates(updates).Error; err != nil {
+		return err
+	}
 	return nil
+
 }
 func (a *annotationRepo) DeleteAnnotation(ctx context.Context, annotationID uint) error {
+	annotation := &models.Annotation{ID: annotationID}
+	if err := a.db.WithContext(ctx).Delete(annotation).Error; err != nil {
+		return err
+	}
 	return nil
 }
 

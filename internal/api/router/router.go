@@ -73,7 +73,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			song.POST("", songHandler.CreateSong)
 			song.GET("", songHandler.GetAllSongs)
 			song.GET("/:id", songHandler.GetSongById)
-			song.GET("/:slug", songHandler.GetSongBySlug)
+			song.GET("/slug/:slug", songHandler.GetSongBySlug)
 			song.PUT("/:id", songHandler.UpdateSong)
 			song.DELETE("/:id", songHandler.DeleteSong)
 		}

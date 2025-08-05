@@ -83,9 +83,10 @@ func (r *artistRepo) GetArtistsCount(ctx context.Context) (int64, error) {
 
 func (r *artistRepo) GetArtistByIds(ctx context.Context, ids []int) ([]models.Artist, error) {
 	var artists []models.Artist
-	if err := r.db.WithContext(ctx).Where("id IN (?)", ids).Find(&artists).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&artists).Error; err != nil {
 		r.logger.Error("failed to get artists by ids", zap.Error(err))
 		return artists, err
 	}
+	r.logger.Info("artists fetched successfully", zap.Any("artists", artists))
 	return artists, nil
 }
