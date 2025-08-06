@@ -30,7 +30,7 @@ func (s *songRepo) CreateSong(ctx context.Context, song *models.Song) error {
 }
 func (s *songRepo) GetSongByID(ctx context.Context, id int) (*models.Song, error) {
 	var song models.Song
-	if err := s.db.WithContext(ctx).Where("id=?", id).First(&song).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("id=?", id).Preload("Artists").First(&song).Error; err != nil {
 		return nil, err
 	}
 	s.logger.Info("Song fetched successfully", zap.Any("song", id))
