@@ -28,6 +28,7 @@ func (a *AnnotationHandler) CreateAnnotation(ctx *gin.Context) {
 
 	songId, _ := strconv.Atoi(ctx.Param("song_id"))
 	userId := ctx.Value("user_id").(int)
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		a.logger.Error("failed to bind json", zap.Error(err))
 		ctx.JSON(http.StatusBadRequest, &util.ErrorResponse{
@@ -67,6 +68,28 @@ func (a *AnnotationHandler) CreateAnnotation(ctx *gin.Context) {
 		Status:  true,
 		Message: "annotation created successfully",
 		Data:    annotationData,
+	})
+
+}
+
+func (a *AnnotationHandler) GetAnnotationsBySongID(ctx *gin.Context) {
+	songID, _ := strconv.Atoi(ctx.Param("song_id"))
+	annotations, err := a.annotationService.GetAnnotationsBySongID(ctx.Request.Context(), songID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, &util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+				Details: err.Error(),
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, &util.SuccessResponse{
+		Status:  true,
+		Message: "Annotations fetched successfully",
+		Data:    annotations,
 	})
 
 }

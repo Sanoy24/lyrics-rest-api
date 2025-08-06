@@ -85,6 +85,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		annotation := protected.Group("/annotation")
 		{
 			annotation.POST("/:song_id", annotationHandler.CreateAnnotation)
+			annotation.GET("/:song_id", annotationHandler.GetAnnotationsBySongID)
 		}
 
 	}

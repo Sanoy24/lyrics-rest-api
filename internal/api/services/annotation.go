@@ -52,3 +52,35 @@ func (a *AnnotationService) CreateAnnotation(ctx context.Context, songId, userId
 	a.logger.Info("annotation created successfully", zap.Any("annotation", annotation))
 	return annotation, nil
 }
+
+func (a *AnnotationService) GetAnnotationsBySongID(ctx context.Context, songID int) ([]models.AnnotationResponse, error) {
+	annotations, err := a.annotationRepo.GetAnnotationsBySongID(ctx, songID)
+	if err != nil {
+		return nil, err
+	}
+	var response []models.AnnotationResponse
+	for _, ann := range annotations {
+		res := models.AnnotationResponse{
+			ID:         ann.ID,
+			StartIndex: ann.StartIndex,
+			EndIndex:   ann.EndIndex,
+			Fragment:   ann.Fragment,
+			Content:    ann.Content,
+		}
+		if ann.User.ID != 0 {
+			res.User = &models.SimpleUser{
+				ID:       ann.User.ID,
+				Username: ann.User.Username,
+			}
+		}
+		if ann.Song.ID != 0 {
+			res.Song = &models.SimpleSong{
+				ID:    ann.Song.ID,
+				Title: ann.Song.Title,
+			}
+		}
+		response = append(response, res)
+	}
+
+	return response, nil
+}

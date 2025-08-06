@@ -47,3 +47,23 @@ type AnnotationSummary struct {
 	Verified   int
 	Unverified int
 }
+
+type AnnotationResponse struct {
+	ID         uint        `json:"id"`
+	StartIndex int         `json:"start_index"`
+	EndIndex   int         `json:"end_index"`
+	Fragment   string      `json:"fragment"`
+	Content    string      `json:"content"`
+	User       *SimpleUser `json:"user,omitempty"`
+	Song       *SimpleSong `json:"song,omitempty"`
+}
+
+type SimpleUser struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}
+
+type SimpleSong struct {
+	ID    uint   `json:"id"`
+	Title string `json:"title"`
+}

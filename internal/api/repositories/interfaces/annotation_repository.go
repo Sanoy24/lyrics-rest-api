@@ -21,7 +21,7 @@ import (
 
 type AnnotationRepository interface {
 	CreateAnnotation(ctx context.Context, annotation *models.Annotation) error
-	GetAnnotationsBySongID(ctx context.Context, songID uint) ([]models.Annotation, error)
+	GetAnnotationsBySongID(ctx context.Context, songID int) ([]models.Annotation, error)
 	GetAnnotationByID(ctx context.Context, annotationID uint) (*models.Annotation, error)
 	UpdateAnnotation(ctx context.Context, annotationID uint, updates *models.UpdateAnnotationRequest) error
 	DeleteAnnotation(ctx context.Context, annotationID uint) error
