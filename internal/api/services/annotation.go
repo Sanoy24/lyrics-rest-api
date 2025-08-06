@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
@@ -83,4 +84,39 @@ func (a *AnnotationService) GetAnnotationsBySongID(ctx context.Context, songID i
 	}
 
 	return response, nil
+}
+
+func (a *AnnotationService) UpdateAnnotation(ctx context.Context, annotationID, songID int, req *models.UpdateAnnotationRequest) error {
+
+	song, err := a.songRepo.GetSongByID(ctx, songID)
+	if err != nil {
+		return err
+	}
+
+	lyrics := song.Lyrics
+	a.logger.Info("lyrics", zap.String("lyrics", lyrics))
+
+	if req.StartIndex < 0 || req.EndIndex > len(lyrics) || req.EndIndex < req.StartIndex {
+		return errors.New("invalid start or end index")
+	}
+
+	fragment := lyrics[req.StartIndex:req.EndIndex]
+	req.Fragment = fragment
+
+	err = a.annotationRepo.UpdateAnnotation(ctx, annotationID, req)
+	if err != nil {
+		a.logger.Error("failed to update annotation", zap.Error(err))
+		return err
+	}
+	return nil
+
+}
+
+func (a *AnnotationService) DeleteAnnotation(ctx context.Context, annotationID int) error {
+	err := a.annotationRepo.DeleteAnnotation(ctx, annotationID)
+	if err != nil {
+		a.logger.Error("failed to delete annotation", zap.Error(err))
+		return err
+	}
+	return nil
 }

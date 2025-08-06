@@ -115,7 +115,7 @@ func (s *SongService) GetAllSongs(ctx context.Context, limit, offset int) (*util
 
 	s.logger.Info("songs fetched successfully")
 	return &util.PaginatedResponse{
-		Sucess:  true,
+		Success: true,
 		Message: "songs fetched successfully",
 		Data:    songResponse,
 		Pagination: &util.Pagination{

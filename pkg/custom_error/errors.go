@@ -17,6 +17,7 @@ var (
 	ErrUnauthorized       = NewAppError("UNAUTHORIZED", "Unauthorized access", http.StatusUnauthorized)
 	ErrForbidden          = NewAppError("FORBIDDEN", "Access forbidden", http.StatusForbidden)
 	ErrInvalidCredentials = NewAppError("INVALID_CREDENTIALS", "Invalid credentials", http.StatusUnauthorized)
+	ErrNotFound           = errors.New("resource not found")
 )
 
 type AppError struct {

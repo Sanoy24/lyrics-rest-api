@@ -10,7 +10,7 @@ type APIResponse struct {
 }
 
 type PaginatedResponse struct {
-	Sucess     bool        `json:"success"`
+	Success    bool        `json:"success"`
 	Message    string      `json:"message"`
 	Data       any         `json:"data"`
 	Pagination *Pagination `json:"pagination"`

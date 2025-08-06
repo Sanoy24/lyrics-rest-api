@@ -2,9 +2,11 @@ package annotation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
+	customerror "github.com/Sanoy24/lyrics-rest-api/pkg/custom_error"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -105,13 +107,22 @@ func (a *annotationRepo) GetAnnotationByID(ctx context.Context, annotationID uin
 //
 //	error: An error if the update operation fails (e.g., database error,
 //	       or if the record with the given ID does not exist).
-func (a *annotationRepo) UpdateAnnotation(ctx context.Context, annotationID uint, updates *models.UpdateAnnotationRequest) error {
+func (a *annotationRepo) UpdateAnnotation(ctx context.Context, annotationID int, updates *models.UpdateAnnotationRequest) error {
 
-	if err := a.db.WithContext(ctx).Model(&models.Annotation{}).Where("id = ?", annotationID).Updates(updates).Error; err != nil {
+	result := a.db.WithContext(ctx).Model(&models.Annotation{}).Where("id = ?", annotationID).Updates(updates)
+
+	if result.Error != nil {
+		a.logger.Error("failed to update annotation", zap.Error(result.Error))
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		err := fmt.Errorf("%w: annotation with id %d", customerror.ErrNotFound, annotationID)
+		a.logger.Info("Annotation not found with the given id")
 		return err
 	}
-	return nil
 
+	a.logger.Info("annotation updated successfully", zap.Int("annotation_id", annotationID))
+	return nil
 }
 
 // DeleteAnnotation deletes an annotation from the database by its ID.
@@ -126,8 +137,8 @@ func (a *annotationRepo) UpdateAnnotation(ctx context.Context, annotationID uint
 //	error: An error if the deletion operation fails (e.g., database error,
 //	       or if the record with the given ID does not exist).
 //	       GORM performs a soft delete by default if the model has a `gorm.DeletedAt` field.
-func (a *annotationRepo) DeleteAnnotation(ctx context.Context, annotationID uint) error {
-	annotation := &models.Annotation{ID: annotationID}
+func (a *annotationRepo) DeleteAnnotation(ctx context.Context, annotationID int) error {
+	annotation := &models.Annotation{ID: uint(annotationID)}
 	if err := a.db.WithContext(ctx).Delete(annotation).Error; err != nil {
 		return err
 	}

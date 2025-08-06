@@ -9,7 +9,7 @@ import (
 // POST		/songs/:songID/annotations			Create a new annotation for a song
 // GET		/songs/:songID/annotations			Get all annotations for a specific song
 // GET		/annotations/:id					Get a single annotation by its ID
-// PUT		/annotations/:id					Update an annotation (by owner or admin)
+// PUT		/annotations/:id/somg/song_id					Update an annotation (by owner or admin)
 // DELETE	/annotations/:id					Delete an annotation (by owner or admin)
 // POST		/annotations/:id/votes				Upvote or downvote an annotation
 // GET		/annotations/:id/comments			Get comments for an annotation
@@ -23,8 +23,8 @@ type AnnotationRepository interface {
 	CreateAnnotation(ctx context.Context, annotation *models.Annotation) error
 	GetAnnotationsBySongID(ctx context.Context, songID int) ([]models.Annotation, error)
 	GetAnnotationByID(ctx context.Context, annotationID uint) (*models.Annotation, error)
-	UpdateAnnotation(ctx context.Context, annotationID uint, updates *models.UpdateAnnotationRequest) error
-	DeleteAnnotation(ctx context.Context, annotationID uint) error
+	UpdateAnnotation(ctx context.Context, annotationID int, updates *models.UpdateAnnotationRequest) error
+	DeleteAnnotation(ctx context.Context, annotationID int) error
 
 	AddAnnotationVote(ctx context.Context, vote *models.Vote) error
 	AddAnnotationComment(ctx context.Context, comment *models.Comment) error
