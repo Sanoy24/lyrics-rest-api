@@ -36,9 +36,11 @@ type CreateAnnotationRequest struct {
 }
 
 type UpdateAnnotationRequest struct {
-	StartIndex *int   `json:"start_index,omitempty"`
-	EndIndex   *int   `json:"end_index,omitempty"`
-	Content    string `json:"content" binding:"required"`
+	StartIndex int    `json:"start_index,omitempty"`
+	EndIndex   int    `json:"end_index,omitempty"`
+	Content    string `json:"content,omitempty"`
+	Verified   bool   `json:"verified,omitempty"`
+	Fragment   string `json:"-"`
 }
 
 type AnnotationSummary struct {
