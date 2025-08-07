@@ -35,4 +35,5 @@ type AnnotationRepository interface {
 
 	VerifyAnnotation(ctx context.Context, annotationID uint) error
 	GetPendingAnnotations(ctx context.Context) ([]models.Annotation, error)
+	UpdateVoteScore(ctx context.Context, annotationID uint, scoreDelta int) error
 }

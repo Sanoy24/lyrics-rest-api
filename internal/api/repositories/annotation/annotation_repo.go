@@ -145,6 +145,12 @@ func (a *annotationRepo) DeleteAnnotation(ctx context.Context, annotationID int)
 	return nil
 }
 
+func (r *annotationRepo) UpdateVoteScore(ctx context.Context, annotationID uint, scoreDelta int) error {
+	return r.db.WithContext(ctx).Model(&models.Annotation{}).
+		Where("id = ?", annotationID).
+		UpdateColumn("vote_score", gorm.Expr("vote_score + ?", scoreDelta)).Error
+}
+
 func (a *annotationRepo) AddAnnotationVote(ctx context.Context, vote *models.Vote) error {
 	return nil
 }

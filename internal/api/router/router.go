@@ -7,6 +7,7 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/artist"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/song"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/user"
+	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/vote"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	artistRepo := artist.NewArtistRepo(db, logger)
 	songRepo := song.NewSongRepo(db, logger)
 	annotationRepo := annotation.NewAnnotationRepo(db, logger)
+	voteRepo := vote.NewVoteRepo(db, logger)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpireIn, logger)
@@ -29,6 +31,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	artistService := services.NewArtistService(artistRepo, logger)
 	songService := services.NewSongService(songRepo, artistRepo, logger)
 	annotationService := services.NewAnnotationService(annotationRepo, songRepo, logger)
+	voteService := services.NewVoteService(voteRepo, songRepo, annotationRepo, logger)
 
 	// Initialize Handler
 	authHandler := handlers.NewAuthHandler(authService, logger)
@@ -36,6 +39,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	artistHandler := handlers.NewArtistHandler(artistService, logger)
 	songHandler := handlers.NewSongHandler(songService, logger)
 	annotationHandler := handlers.NewAnnotationHandler(annotationService, logger)
+	voteHandler := handlers.NewVoteHandler(voteService, logger)
 
 	healthCheck := handlers.NewHealthHandler(logger)
 
@@ -88,6 +92,11 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			annotation.GET("/:song_id", annotationHandler.GetAnnotationsBySongID)
 			annotation.PUT("/songs/:song_id/annotations/:annotation_id", annotationHandler.UpdateAnnotation)
 			annotation.DELETE("/:id", annotationHandler.DeleteAnnotation)
+		}
+
+		vote := protected.Group("/vote")
+		{
+			vote.POST("", voteHandler.CastVote)
 		}
 
 	}

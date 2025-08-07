@@ -23,4 +23,5 @@ type SongRepository interface {
 	DeleteSong(ctx context.Context, id int) error
 	GetAllSongs(ctx context.Context, limit, offset int) ([]models.Song, error)
 	GetSongsCount(ctx context.Context) (int64, error)
+	UpdateVoteScore(ctx context.Context, songID uint, scoreDelta int) error
 }
