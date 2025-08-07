@@ -48,6 +48,20 @@ func (v *VoteHandler) CastVote(ctx *gin.Context) {
 
 	}
 
-	v.voteService.CastVote(ctx.Request.Context(), &req, req.Id)
+	if err := v.voteService.CastVote(ctx.Request.Context(), &req, req.Id); err != nil {
+		ctx.JSON(http.StatusInternalServerError, &util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "Internal server error",
+				Details: err.Error(),
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, &util.SuccessResponse{
+		Status:  true,
+		Message: "vote created successfully",
+	})
 
 }

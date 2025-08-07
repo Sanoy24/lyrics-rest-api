@@ -22,7 +22,7 @@ type Vote struct {
 }
 
 type CreateVoteRequest struct {
-	UserID     uint   `json:"user_id" binding:"required"`
+	UserID     uint   `json:"-"`
 	EntityType string `json:"entity_type" binding:"required,oneof=song annotation comment"`
 	EntityID   uint   `json:"entity_id" binding:"required"`
 	VoteType   string `json:"vote_type" binding:"required,oneof=upvote downvote unvote"`

@@ -54,13 +54,13 @@ func (v *VoteService) CastVote(ctx context.Context, req *models.CreateVoteReques
 	// Set the appropriate foreign key based on entity type
 	switch req.EntityType {
 	case "song":
-		songID := uint(id)
+		songID := uint(req.EntityID)
 		vote.SongID = &songID
-	case "annotation": // Fixed typo
-		annotationID := uint(id)
+	case "annotation":
+		annotationID := uint(req.EntityID)
 		vote.AnnotationID = &annotationID
 	case "comment":
-		commentID := uint(id)
+		commentID := uint(req.EntityID)
 		vote.CommentID = &commentID
 	default:
 		return fmt.Errorf("invalid entity type: %s", req.EntityType)
@@ -95,6 +95,7 @@ func (v *VoteService) CastVote(ctx context.Context, req *models.CreateVoteReques
 		// New vote
 		if req.VoteType != "unvote" {
 			scoreDelta = voteValue
+			v.logger.Info("vote data", zap.Any("vote", vote))
 			if err := v.voteRepo.CastVote(ctx, vote); err != nil {
 				return fmt.Errorf("failed to create vote: %w", err)
 			}
