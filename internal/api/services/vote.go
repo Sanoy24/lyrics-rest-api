@@ -12,17 +12,19 @@ import (
 )
 
 type VoteService struct {
-	voteRepo       interfaces.VoteRepository
-	songRepo       interfaces.SongRepository
-	commentRepo    interfaces.CommentRepository
+	voteRepo interfaces.VoteRepository
+	songRepo interfaces.SongRepository
+	// commentRepo    interfaces.CommentRepository
 	annotationRepo interfaces.AnnotationRepository
 	logger         *zap.Logger
 }
 
-func NewVoteService(voteRepo interfaces.VoteRepository, logger *zap.Logger) *VoteService {
+func NewVoteService(voteRepo interfaces.VoteRepository, songRepo interfaces.SongRepository, annotationRepo interfaces.AnnotationRepository, logger *zap.Logger) *VoteService {
 	return &VoteService{
-		voteRepo: voteRepo,
-		logger:   logger,
+		voteRepo:       voteRepo,
+		songRepo:       songRepo,
+		annotationRepo: annotationRepo,
+		logger:         logger,
 	}
 }
 
@@ -93,7 +95,7 @@ func (v *VoteService) CastVote(ctx context.Context, req *models.CreateVoteReques
 		// New vote
 		if req.VoteType != "unvote" {
 			scoreDelta = voteValue
-			if err := v.voteRepo.CreateVote(ctx, vote); err != nil {
+			if err := v.voteRepo.CastVote(ctx, vote); err != nil {
 				return fmt.Errorf("failed to create vote: %w", err)
 			}
 		}
@@ -117,8 +119,8 @@ func (v *VoteService) updateEntityVoteScore(ctx context.Context, entityType stri
 		return v.annotationRepo.UpdateVoteScore(ctx, entityID, scoreDelta)
 	case "song":
 		return v.songRepo.UpdateVoteScore(ctx, entityID, scoreDelta)
-	case "comment":
-		return v.commentRepo.UpdateVoteScore(ctx, entityID, scoreDelta)
+	// case "comment":
+	// 	return v.commentRepo.UpdateVoteScore(ctx, entityID, scoreDelta)
 	default:
 		return fmt.Errorf("unsupported entity type for vote score update: %s", entityType)
 	}

@@ -18,4 +18,9 @@ type VoteRepository interface {
 
 	// Count upvotes/downvotes separately (optional)
 	CountVotesByType(ctx context.Context, entityType string, entityID uint, value int8) (int64, error)
+
+	// Delete Vote
+	DeleteVote(ctx context.Context, voteID uint) error
+
+	UpdateVote(ctx context.Context, vote *models.Vote) error
 }

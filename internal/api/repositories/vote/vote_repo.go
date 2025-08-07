@@ -54,3 +54,11 @@ func (v *VoteRepo) GetEntityVoteScore(ctx context.Context, entityType string, en
 func (v *VoteRepo) CountVotesByType(ctx context.Context, entityType string, entityID uint, value int8) (int64, error) {
 	return 0, nil
 }
+
+func (r *VoteRepo) UpdateVote(ctx context.Context, vote *models.Vote) error {
+	return r.db.WithContext(ctx).Save(vote).Error
+}
+
+func (r *VoteRepo) DeleteVote(ctx context.Context, voteID uint) error {
+	return r.db.WithContext(ctx).Delete(&models.Vote{}, voteID).Error
+}

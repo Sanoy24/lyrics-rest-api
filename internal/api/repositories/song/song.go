@@ -81,3 +81,10 @@ func (r *songRepo) GetSongsCount(ctx context.Context) (int64, error) {
 	}
 	return count, nil
 }
+
+func (r *songRepo) UpdateVoteScore(ctx context.Context, songID uint, scoreDelta int) error {
+	// Assuming Song model has vote_score field
+	return r.db.WithContext(ctx).Model(&models.Song{}).
+		Where("id = ?", songID).
+		UpdateColumn("vote_score", gorm.Expr("vote_score + ?", scoreDelta)).Error
+}
