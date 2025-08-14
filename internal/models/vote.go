@@ -28,3 +28,8 @@ type CreateVoteRequest struct {
 	VoteType   string `json:"vote_type" binding:"required,oneof=upvote downvote unvote"`
 	Id         int    `json:"-"`
 }
+
+type UpdateVote struct {
+	EntityType string `json:"entity_type" binding:"required"`
+	VoteDelta  int8   `json:"vote_delta" binding:"required"`
+}

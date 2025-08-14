@@ -97,6 +97,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		vote := protected.Group("/vote")
 		{
 			vote.POST("", voteHandler.CastVote)
+			vote.POST("/:id", voteHandler.UpdateVoteScore)
 		}
 
 	}
