@@ -105,7 +105,7 @@ func (v *VoteService) CastVote(ctx context.Context, req *models.CreateVoteReques
 
 	// Update the vote score on the target entity if there's a change
 	if scoreDelta != 0 {
-		if err := v.updateEntityVoteScore(ctx, req.EntityType, req.EntityID, int(scoreDelta)); err != nil {
+		if err := v.UpdateEntityVoteScore(ctx, req.EntityType, req.EntityID, int(scoreDelta)); err != nil {
 			return fmt.Errorf("failed to update entity vote score: %w", err)
 		}
 	}
@@ -114,7 +114,7 @@ func (v *VoteService) CastVote(ctx context.Context, req *models.CreateVoteReques
 
 }
 
-func (v *VoteService) updateEntityVoteScore(ctx context.Context, entityType string, entityID uint, scoreDelta int) error {
+func (v *VoteService) UpdateEntityVoteScore(ctx context.Context, entityType string, entityID uint, scoreDelta int) error {
 	switch entityType {
 	case "annotation":
 		return v.annotationRepo.UpdateVoteScore(ctx, entityID, scoreDelta)

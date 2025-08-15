@@ -84,6 +84,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			song.GET("/slug/:slug", songHandler.GetSongBySlug)
 			song.PUT("/:id", songHandler.UpdateSong)
 			song.DELETE("/:id", songHandler.DeleteSong)
+			song.GET("/search", songHandler.SearchSongs)
 		}
 
 		annotation := protected.Group("/annotation")
@@ -97,6 +98,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 		vote := protected.Group("/vote")
 		{
 			vote.POST("", voteHandler.CastVote)
+			vote.POST("/:id", voteHandler.UpdateVoteScore)
 		}
 
 	}

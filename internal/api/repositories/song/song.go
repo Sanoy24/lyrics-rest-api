@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/interfaces"
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
+	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -87,4 +88,20 @@ func (r *songRepo) UpdateVoteScore(ctx context.Context, songID uint, scoreDelta 
 	return r.db.WithContext(ctx).Model(&models.Song{}).
 		Where("id = ?", songID).
 		UpdateColumn("vote_score", gorm.Expr("vote_score + ?", scoreDelta)).Error
+}
+
+func (r *songRepo) SearchSongs(ctx context.Context, query string) ([]models.Song, error) {
+	formattedQuery := util.FormatTsQuery(query)
+	var songs []models.Song
+	if err := r.db.Raw(`
+		SELECT id, title, slug, lyrics, description, image, release_date, album_id, contributor_id, verified, created_at, updated_at
+        FROM songs
+        WHERE search_vector @@ to_tsquery('english', ?)
+        ORDER BY ts_rank(search_vector, to_tsquery('english', ?)) DESC
+        LIMIT 20`, formattedQuery, formattedQuery).Scan(&songs).Error; err != nil {
+		return nil, err
+	}
+	r.logger.Info("-- response --", zap.Any("song response==", songs))
+	return songs, nil
+
 }
