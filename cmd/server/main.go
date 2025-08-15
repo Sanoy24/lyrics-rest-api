@@ -52,6 +52,9 @@ func main() {
 		if err := database.Migrate(db); err != nil {
 			log.Fatal("Failed to run migrations:", err)
 		}
+		if err := database.SetupTsVector(db); err != nil {
+			log.Fatal("Failed to run migrations:", err)
+		}
 		log.Println("Migrations completed successfully.")
 		return
 	}

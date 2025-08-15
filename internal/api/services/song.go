@@ -144,3 +144,12 @@ func (s *SongService) DeleteSong(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+func (s *SongService) SearchSong(ctx context.Context, query string) ([]models.Song, error) {
+	s.logger.Info("querr--->", zap.String("query", query))
+	songs, err := s.songRepo.SearchSongs(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	return songs, nil
+}

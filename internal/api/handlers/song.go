@@ -184,3 +184,34 @@ func (s *SongHandler) DeleteSong(ctx *gin.Context) {
 	})
 
 }
+
+func (s *SongHandler) SearchSongs(ctx *gin.Context) {
+	query := ctx.Query("q")
+	if query == "" {
+		ctx.JSON(http.StatusBadRequest, &util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "BAD_REQUEST",
+				Message: "enter a valid search query ",
+			},
+		})
+		return
+	}
+	songs, err := s.songService.SearchSong(ctx.Request.Context(), query)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, &util.ErrorResponse{
+			Status: false,
+			Error: &util.ErrorData{
+				Code:    "INTERNAL_ERROR",
+				Message: "error while doing search",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, &util.SuccessResponse{
+		Status:  true,
+		Message: "song fetched by query successfully",
+		Data:    songs,
+	})
+
+}

@@ -115,3 +115,38 @@ func Migrate(db *gorm.DB) error {
 	log.Println("Database migration completed successfully")
 	return nil
 }
+
+func SetupTsVector(db *gorm.DB) error {
+	db.Exec(`ALTER TABLE songs ADD COLUMN IF NOT EXITS search_vector tsvector;`)
+	db.Exec(`
+	CREATE OR REPLACE FUNCTION songs_search_vector_update() RETURNS trigger AS $$
+BEGIN
+    NEW.search_vector :=
+        setweight(to_tsvector('english', coalesce(NEW.title,'')),'A') ||
+        setweight(to_tsvector('english', coalesce(NEW.lyrics,'')),'B') ||
+        setweight(to_tsvector('english', coalesce(NEW.description,'')),'C') ||
+        setweight(to_tsvector('english', coalesce(
+            (SELECT title FROM albums WHERE albums.id = NEW.album_id), '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(
+            (SELECT string_agg(artists.name, ' ')
+             FROM song_artists
+             JOIN artists ON artists.id = song_artists.artist_id
+             WHERE song_artists.song_id = NEW.id), '')
+        ), 'A');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+	`)
+
+	db.Exec(`
+    DROP TRIGGER IF EXISTS songs_search_vector_trigger ON songs;
+    CREATE TRIGGER songs_search_vector_trigger
+    BEFORE INSERT OR UPDATE ON songs
+    FOR EACH ROW
+    EXECUTE FUNCTION songs_search_vector_update();
+    `)
+
+	db.Exec(`CREATE INDEX IF NOT EXISTS songs_search_vector_idx ON songs USING GIN (search_vector);`)
+
+	return nil
+}
