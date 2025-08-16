@@ -1,0 +1,15 @@
+# Ignore common development artifacts
+.git
+.gitignore
+node_modules
+target/
+build/
+.vscode/
+
+# Ignore sensitive files
+.env
+*.pem
+
+# Ignore temporary files
+*.tmp
+temp/
