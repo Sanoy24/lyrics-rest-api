@@ -10,6 +10,7 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/vote"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
+	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -64,6 +65,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			user.GET("/me", userHandler.GetCurrentUser)
 			user.GET("/:id", userHandler.GetPublicUser)
 			user.PUT("/me", userHandler.UpdateUser)
+			user.POST("/upload", util.UploadImage)
 		}
 		artist := protected.Group("/artists")
 		{

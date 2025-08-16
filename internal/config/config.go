@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
+	Server         ServerConfig
+	Database       DatabaseConfig
+	JWT            JWTConfig
+	ClaudinaryKeys ClaudinaryConfig
 }
 
 type ServerConfig struct {
@@ -25,6 +26,11 @@ type DatabaseConfig struct {
 	DBPassword string `mapstructure:"DB_PASSWORD"`
 	DBName     string `mapstructure:"DB_NAME"`
 	DBPort     string `mapstructure:"DB_PORT"`
+}
+type ClaudinaryConfig struct {
+	ClaudinaryApiKey    string
+	ClaudinarySecret    string
+	ClaudinaryCloudName string
 }
 
 type JWTConfig struct {
@@ -52,6 +58,11 @@ func LoadConfig() (*Config, error) {
 		}, JWT: JWTConfig{
 			Secret:   getEnv("JWT_SECRET", "secret"),
 			ExpireIn: expiresIn,
+		},
+		ClaudinaryKeys: ClaudinaryConfig{
+			ClaudinaryApiKey:    getEnv("CLAUDINARY_API_KEY", ""),
+			ClaudinarySecret:    getEnv("CLAUDINARY_SECRET_KEY", ""),
+			ClaudinaryCloudName: getEnv("CLOUDINARY_CLOUD_NAME", ""),
 		},
 	}, nil
 }
