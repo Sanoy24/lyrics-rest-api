@@ -10,7 +10,6 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/vote"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
-	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -33,6 +32,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	songService := services.NewSongService(songRepo, artistRepo, logger)
 	annotationService := services.NewAnnotationService(annotationRepo, songRepo, logger)
 	voteService := services.NewVoteService(voteRepo, songRepo, annotationRepo, logger)
+	uploadService := services.NewUploadService(cfg)
 
 	// Initialize Handler
 	authHandler := handlers.NewAuthHandler(authService, logger)
@@ -41,6 +41,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	songHandler := handlers.NewSongHandler(songService, logger)
 	annotationHandler := handlers.NewAnnotationHandler(annotationService, logger)
 	voteHandler := handlers.NewVoteHandler(voteService, logger)
+	uploadHander := handlers.NewUploadHandler(uploadService)
 
 	healthCheck := handlers.NewHealthHandler(logger)
 
@@ -65,7 +66,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 			user.GET("/me", userHandler.GetCurrentUser)
 			user.GET("/:id", userHandler.GetPublicUser)
 			user.PUT("/me", userHandler.UpdateUser)
-			user.POST("/upload", util.UploadImage)
+			user.POST("/upload", uploadHander.UploadImageHandler)
 		}
 		artist := protected.Group("/artists")
 		{
