@@ -14,8 +14,11 @@ require (
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/ulule/limiter/v3 v3.11.2 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
+	golang.org/x/time v0.12.0 // indirect
 )
 
 require (

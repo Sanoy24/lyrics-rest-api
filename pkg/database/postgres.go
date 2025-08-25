@@ -15,7 +15,7 @@ import (
 var DB *gorm.DB
 
 func InitDB(dbParam *models.PostgresParam) error {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		dbParam.DB_HOST, dbParam.DB_USER, dbParam.DB_PASSWORD, dbParam.DB_NAME, dbParam.DB_PORT)
 
 	// newLogger := logger.New(log.New(os.Stdout, "\r\n", log.LstdFlags), logger.Config{

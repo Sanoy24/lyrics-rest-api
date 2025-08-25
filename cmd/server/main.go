@@ -109,5 +109,4 @@ func setupLogger() *zap.Logger {
 	}
 
 	return logger
-
 }

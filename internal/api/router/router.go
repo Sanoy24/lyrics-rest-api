@@ -52,6 +52,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
+		auth.Use(middleware.RateLimiterMiddleware(5, 10))
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
