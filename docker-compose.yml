@@ -20,6 +20,8 @@ services:
             timeout: 10s
             retries: 3
             start_period: 10s
+        volumes:
+            - uploads:/app/assets/uploads
 
     db:
         image: postgres:15
@@ -42,3 +44,4 @@ services:
 
 volumes:
     db-data:
+    uploads:
