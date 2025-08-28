@@ -39,11 +39,16 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 		return nil, customerror.ErrInternalServer
 	}
 	role, err := s.userRepo.GetRoleByName(ctx, "user")
-	s.logger.Info("role", zap.Int("role", int(role.ID)))
 	if err != nil {
 		s.logger.Info("failed to get role", zap.Error(err))
 		return nil, customerror.ErrInternalServer
 	}
+	if role == nil {
+		s.logger.Info("role not found", zap.String("role_name", "user"))
+		return nil, customerror.ErrInternalServer // Or a specific error like customerror.ErrRoleNotFound
+	}
+	s.logger.Info("role", zap.Int("role", int(role.ID)))
+
 	user := &models.User{
 		Username:  req.Username,
 		Email:     req.Email,
@@ -64,7 +69,6 @@ func (s *AuthService) Register(ctx context.Context, req *models.CreateUserReques
 			"user": *user.ToResponse(),
 		},
 	}, nil
-
 }
 
 func (s *AuthService) Login(ctx context.Context, req *models.UserLoginRequest) (*util.AuthResponse, error) {

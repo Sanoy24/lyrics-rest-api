@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/util"
@@ -47,29 +46,6 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		ctx.Set("role", claims.Role)
 		ctx.Set("permissions", claims.Permission)
 		ctx.Next()
-	}
-}
-
-func LoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Start time for latency measurement
-		start := time.Now()
-
-		// Process request
-		c.Next()
-
-		// Calculate latency
-		latency := time.Since(start)
-
-		// Log request details
-		logger.Info("http request",
-			zap.String("method", c.Request.Method),
-			zap.String("path", c.Request.URL.Path),
-			zap.Int("status", c.Writer.Status()),
-			zap.Duration("latency", latency),
-			zap.String("client_ip", c.ClientIP()),
-			zap.String("user_agent", c.Request.UserAgent()),
-		)
 	}
 }
 
