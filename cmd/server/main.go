@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -16,11 +17,13 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/models"
 	"github.com/Sanoy24/lyrics-rest-api/pkg/database"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
 	cfg, err := config.LoadConfig()
-	logger := setupLogger()
+	logger := setupLogger(cfg)
 
 	runMigrations := flag.Bool("migrate", false, "Run database migrations and exit")
 	runSeeder := flag.Bool("seed", false, "Run database seeder and exit")
@@ -102,11 +105,60 @@ func gracefulShutdown(server *http.Server) {
 	log.Println("Server exited gracefully.")
 }
 
-func setupLogger() *zap.Logger {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatal("Failed to initialize logger:", err)
+func setupLogger(cfg *config.Config) *zap.Logger {
+	// Define log file path
+	logDir := "logs"
+	logFile := filepath.Join(logDir, "app.log")
+
+	// Create logs directory if it doesn't exist
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		log.Fatal("Failed to create log directory:", err)
 	}
+
+	// Configure file sink with rotation
+	fileSink := &lumberjack.Logger{
+		Filename:   logFile,
+		MaxSize:    10, // MB
+		MaxBackups: 5,
+		MaxAge:     30, // days
+		Compress:   true,
+	}
+
+	// Base encoder config
+	baseEncoderCfg := zap.NewProductionEncoderConfig()
+	baseEncoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	baseEncoderCfg.EncodeCaller = zapcore.ShortCallerEncoder
+
+	// Console encoder config
+	consoleEncoderCfg := baseEncoderCfg
+	if cfg.Server.Env == "development" {
+		consoleEncoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // with colors
+	} else {
+		consoleEncoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder // no colors
+	}
+	consoleEncoder := zapcore.NewConsoleEncoder(consoleEncoderCfg)
+
+	// File encoder config (ALWAYS plain JSON, no colors)
+	fileEncoderCfg := baseEncoderCfg
+	fileEncoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+	fileEncoder := zapcore.NewJSONEncoder(fileEncoderCfg)
+
+	// Set up core with multiple outputs
+	var core zapcore.Core
+	if cfg.Server.Env == "development" {
+		core = zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
+			zapcore.NewCore(fileEncoder, zapcore.AddSync(fileSink), zapcore.DebugLevel),
+		)
+	} else {
+		core = zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zapcore.InfoLevel),
+			zapcore.NewCore(fileEncoder, zapcore.AddSync(fileSink), zapcore.InfoLevel),
+		)
+	}
+
+	// Create logger
+	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 
 	return logger
 }
