@@ -1,0 +1,103 @@
+basePath: /api/v1
+definitions:
+  models.CreateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 50
+        type: string
+      last_name:
+        maxLength: 50
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  models.UserResponse:
+    properties:
+      active:
+        type: boolean
+      avatar:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        type: string
+      role_id:
+        type: integer
+      username:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  util.ErrorResponse:
+    properties:
+      error: {}
+      status:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.github.com/Sanoy24
+  description: API documentation for the Lyrics REST API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Lyrics REST API
+  version: "1.0"
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with username and email
+      parameters:
+      - description: User registration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+swagger: "2.0"

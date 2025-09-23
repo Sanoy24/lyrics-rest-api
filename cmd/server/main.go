@@ -21,6 +21,20 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// @title Lyrics REST API
+// @version 1.0
+// @description API documentation for the Lyrics REST API
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.github.com/Sanoy24
+// @contact.email support@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 	cfg, err := config.LoadConfig()
 	logger := setupLogger(cfg)
@@ -108,7 +122,10 @@ func gracefulShutdown(server *http.Server) {
 func setupLogger(cfg *config.Config) *zap.Logger {
 	// Define log file path
 	logDir := "logs"
-	logFile := filepath.Join(logDir, "app.log")
+	// Use the current date to create a new log file for each day
+	// This will generate a file like 'app-2025-09-23.log'
+	logFileName := "app-" + time.Now().Format("2006-01-02") + ".log"
+	logFile := filepath.Join(logDir, logFileName)
 
 	// Create logs directory if it doesn't exist
 	if err := os.MkdirAll(logDir, 0755); err != nil {
@@ -124,6 +141,7 @@ func setupLogger(cfg *config.Config) *zap.Logger {
 		Compress:   true,
 	}
 
+	// ... (rest of the function remains the same)
 	// Base encoder config
 	baseEncoderCfg := zap.NewProductionEncoderConfig()
 	baseEncoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
