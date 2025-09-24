@@ -1,0 +1,32 @@
+{
+    "id": null,
+    "title": "Lyrics API - HTTP",
+    "panels": [
+        {
+            "type": "graph",
+            "title": "Request rate (total)",
+            "targets": [
+                {
+                    "expr": "sum by (status)(rate(http_requests_total[1m]))",
+                    "legendFormat": "{{status}}",
+                    "refId": "A"
+                }
+            ],
+            "datasource": null
+        },
+        {
+            "type": "graph",
+            "title": "Request p95 latency (seconds)",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, path))",
+                    "legendFormat": "{{method}} {{path}}",
+                    "refId": "B"
+                }
+            ],
+            "datasource": null
+        }
+    ],
+    "schemaVersion": 16,
+    "version": 0
+}

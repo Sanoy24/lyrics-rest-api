@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -17,7 +16,8 @@ type JWTClaims struct {
 }
 
 func GenerateJWT(userID int, permission []string, email, role string, secretKey string, expiresIn time.Duration) (string, error) {
-	fmt.Println("EXPIRES at", jwt.NewNumericDate(time.Now().Add(expiresIn)))
+	// Log token expiry in debug level to aid troubleshooting without leaking sensitive data
+	zap.L().Debug("jwt expiry", zap.Time("expires_at", jwt.NewNumericDate(time.Now().Add(expiresIn)).Time))
 	claims := JWTClaims{
 		UserID:     userID,
 		Email:      email,

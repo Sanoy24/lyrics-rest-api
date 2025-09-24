@@ -12,6 +12,7 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
@@ -21,6 +22,8 @@ import (
 func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engine {
 	// Default router
 	router := gin.Default()
+	// Expose prometheus metrics endpoint before other middlewares so it can be scraped without auth
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	// Intialize repo
 	userRepo := user.NewUserRepo(db, logger)
 	artistRepo := artist.NewArtistRepo(db, logger)
@@ -53,6 +56,8 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 
 	// Middlewares
 	router.Use(middleware.LoggerMiddleware(logger))
+	// Instrument requests for Prometheus
+	router.Use(middleware.MetricsMiddleware())
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")

@@ -41,6 +41,11 @@ import (
 func main() {
 	cfg, err := config.LoadConfig()
 	logger := setupLogger(cfg)
+	// Make logger available via zap.L() throughout the codebase and ensure logs are flushed on exit
+	zap.ReplaceGlobals(logger)
+	defer func() {
+		_ = logger.Sync()
+	}()
 
 	runMigrations := flag.Bool("migrate", false, "Run database migrations and exit")
 	runSeeder := flag.Bool("seed", false, "Run database seeder and exit")
