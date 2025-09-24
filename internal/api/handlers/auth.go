@@ -24,6 +24,17 @@ func NewAuthHandler(authService *services.AuthService, logger *zap.Logger) *Auth
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Create a new user account with username and email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.CreateUserRequest true "User registration request"
+// @Success 201 {object} models.UserResponse
+// @Failure 400 {object} util.ErrorResponse "Invalid JSON format"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.CreateUserRequest
 
@@ -57,6 +68,18 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response)
 }
 
+// Login godoc
+// @Summary User login
+// @Description Authenticate a user with their credentials
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.UserLoginRequest true "User login request"
+// @Success 200 {object} util.AuthResponse
+// @Failure 400 {object} util.ErrorResponse "Invalid JSON format"
+// @Failure 401 {object} util.ErrorResponse "Invalid credentials"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.UserLoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -76,22 +99,4 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response)
 
-}
-
-func (h *AuthHandler) handleError(ctx *gin.Context, err error) {
-	if appError, ok := err.(*customerror.AppError); ok {
-		ctx.JSON(appError.StatusCode, util.ErrorResponse{
-			Status: false,
-			Error: &util.ErrorData{
-				Code:    appError.Code,
-				Message: appError.Message,
-			},
-		})
-		return
-	}
-	h.logger.Error("Unhandled error in auth handler", zap.String("error", err.Error()))
-	ctx.JSON(http.StatusInternalServerError, &util.ErrorData{
-		Code:    "INTERNAL_ERROR",
-		Message: "Internal server error",
-	})
 }

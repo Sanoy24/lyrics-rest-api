@@ -1,6 +1,7 @@
 package router
 
 import (
+	_ "github.com/Sanoy24/lyrics-rest-api/docs"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/handlers"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/middleware"
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/repositories/annotation"
@@ -11,6 +12,8 @@ import (
 	"github.com/Sanoy24/lyrics-rest-api/internal/api/services"
 	"github.com/Sanoy24/lyrics-rest-api/internal/config"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -45,6 +48,7 @@ func SetupRouter(db *gorm.DB, logger *zap.Logger, cfg *config.Config) *gin.Engin
 
 	healthCheck := handlers.NewHealthHandler(logger)
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/health", healthCheck.HealthCheck)
 
 	// Middlewares

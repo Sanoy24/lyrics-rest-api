@@ -1,0 +1,282 @@
+basePath: /api/v1
+definitions:
+  models.CreateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 50
+        type: string
+      last_name:
+        maxLength: 50
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      avatar:
+        description: Optional
+        type: string
+      bio:
+        description: Optional
+        maxLength: 500
+        type: string
+      email:
+        type: string
+      first_name:
+        description: Optional
+        maxLength: 50
+        type: string
+      last_name:
+        description: Optional
+        maxLength: 50
+        type: string
+      password:
+        description: Optional
+        maxLength: 100
+        minLength: 6
+        type: string
+      username:
+        description: Optional
+        maxLength: 30
+        minLength: 3
+        type: string
+    type: object
+  models.UserLoginRequest:
+    properties:
+      identifier:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+    required:
+    - identifier
+    - password
+    type: object
+  models.UserResponse:
+    properties:
+      active:
+        type: boolean
+      avatar:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        type: string
+      role_id:
+        type: integer
+      username:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  util.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  util.ErrorResponse:
+    properties:
+      error: {}
+      status:
+        type: boolean
+    type: object
+  util.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.github.com/Sanoy24
+  description: API documentation for the Lyrics REST API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Lyrics REST API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user with their credentials
+      parameters:
+      - description: User login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.AuthResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with username and email
+      parameters:
+      - description: User registration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the public details of a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get public user
+      tags:
+      - user
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the details of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update the details of the currently authenticated user
+      parameters:
+      - description: User update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - user
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -24,7 +24,16 @@ func NewUserHandler(userService *services.UserService, logger *zap.Logger) *User
 
 }
 
-// GET current user /users/me
+// GetCurrentUser godoc
+// @Summary Get current user
+// @Description Retrieve the details of the currently authenticated user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} util.SuccessResponse "User retrieved successfully"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /users/me [get]
 func (u *UserHandler) GetCurrentUser(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 
@@ -58,6 +67,18 @@ func (u *UserHandler) GetCurrentUser(ctx *gin.Context) {
 	})
 }
 
+// GetPublicUser godoc
+// @Summary Get public user
+// @Description Retrieve the public details of a user by ID
+// @Tags user
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Success 200 {object} util.SuccessResponse "User retrieved successfully"
+// @Failure 400 {object} util.ErrorResponse "Invalid user ID"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /users/{id} [get]
 func (u *UserHandler) GetPublicUser(ctx *gin.Context) {
 	userID, exists := ctx.Params.Get("id")
 	if !exists {
@@ -101,6 +122,18 @@ func (u *UserHandler) GetPublicUser(ctx *gin.Context) {
 
 }
 
+// UpdateUser godoc
+// @Summary Update user
+// @Description Update the details of the currently authenticated user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body models.UpdateUserRequest true "User update request"
+// @Success 200 {object} util.SuccessResponse "User updated successfully"
+// @Failure 400 {object} util.ErrorResponse "Invalid JSON format"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /users/me [put]
 func (u *UserHandler) UpdateUser(ctx *gin.Context) {
 	var req models.UpdateUserRequest
 	id := ctx.GetInt("user_id")
@@ -133,6 +166,3 @@ func (u *UserHandler) UpdateUser(ctx *gin.Context) {
 	})
 
 }
-
-// PUT update user profile /users/me
-// GET get public user /users/:id
