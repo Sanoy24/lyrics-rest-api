@@ -25,6 +25,9 @@ import (
 // @version 1.0
 // @description API documentation for the Lyrics REST API
 // @termsOfService http://swagger.io/terms/
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 // @contact.name API Support
 // @contact.url http://www.github.com/Sanoy24

@@ -68,6 +68,18 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response)
 }
 
+// Login godoc
+// @Summary User login
+// @Description Authenticate a user with their credentials
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.UserLoginRequest true "User login request"
+// @Success 200 {object} util.AuthResponse
+// @Failure 400 {object} util.ErrorResponse "Invalid JSON format"
+// @Failure 401 {object} util.ErrorResponse "Invalid credentials"
+// @Failure 500 {object} util.ErrorResponse "Internal server error"
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.UserLoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
